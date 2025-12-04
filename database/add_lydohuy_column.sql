@@ -1,0 +1,8 @@
+-- Thêm cột LYDOHUY vào bảng PHIEUXUAT và PHIEUNHAP
+-- Chạy script này để cập nhật database
+
+ALTER TABLE `PHIEUXUAT` 
+ADD COLUMN `LYDOHUY` VARCHAR(255) NULL COMMENT 'Lý do hủy phiếu' AFTER `TT`;
+
+ALTER TABLE `PHIEUNHAP` 
+ADD COLUMN `LYDOHUY` VARCHAR(255) NULL COMMENT 'Lý do hủy phiếu' AFTER `TT`;
