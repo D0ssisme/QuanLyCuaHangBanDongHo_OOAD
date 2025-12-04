@@ -315,12 +315,12 @@ VALUES
 
 INSERT INTO `NHANVIEN` (`HOTEN`, `GIOITINH`, `NGAYSINH`, `SDT`, `EMAIL`, `MCV`, `TT`)
 VALUES
-        ('Lê Thế Minh', 0, '2077-01-01', '0505555505', 'remchan.com@gmail.com', 1, 1),
-        ('Huỳnh Khôi Nguyên', 1, '2023-05-06', '0123456789', 'nguyeney111@gmail.com', 2, 1),
-        ('Trần Gia Nguyễn', 1, '2004-07-17', '0387913347', 'trangianguyen.com@gmail.com', 2, 1),
-        ('Hoàng Gia Bảo', 1, '2003-04-11', '0355374322', 'musicanime2501@gmail.com', 2, 1),
-        ('Đỗ Nam Công Chính', 1, '2003-04-11', '0123456789', 'chinchin@gmail.com', 2, 1),
-        ('Đinh Ngọc Ân', 1, '2003-04-03', '0123456789', 'ngocan@gmail.com', 2, 1);
+        ('Võ Thị Thu Luyện', 0, '2005-05-01', '0963841257', 'luyn0505.@gmail.com', 1, 1),
+        ('Nguyễn Thị Ngọc Tú', 0, '2005-01-28', '0396532145', 'ngoctu@gmail.com', 2, 1),
+        ('Trần Thị Xuân Thanh', 0, '2005-01-22', '0387913347', 'xuanthanh.@gmail.com', 2, 1),
+        ('Đỗ Hữu Lộc', 1, '2003-04-11', '0355374322', 'musicanime2501@gmail.com', 2, 1),
+        ('Đỗ Nam Anh', 1, '2003-04-11', '0123456789', 'chinchin@gmail.com', 2, 1),
+        ('Đinh Ngọc Ánh', 1, '2003-04-03', '0123456789', 'ngocan@gmail.com', 2, 1);
 
 INSERT INTO `TAIKHOAN` (`MNV`, `TDN`, `MK`, `MNQ`, `TRANGTHAI`, `OTP`)
 VALUES
@@ -330,25 +330,25 @@ VALUES
 
 INSERT INTO `KHACHHANG` (`HOTEN`, `DIACHI`, `SDT`, `TT`, `NGAYTHAMGIA`, `DIEMTICHLUY`)
 VALUES
-        ('Mặc định', '', '', 1, '2024-04-15 09:52:29',0),
-        ('Nguyễn Văn A', 'Gia Đức, Ân Đức, Hoài Ân, Bình Định', '0387913347', 1, '2024-04-15 09:52:29',300),
-        ('Trần Nhất Nhất', '205 Trần Hưng Đạo, Phường 10, Quận 5, Thành phố Hồ Chí Minh', '0123456789', 1, '2024-04-15 09:52:29',300),
-        ('Hoàng Gia Bo', 'Khoa Trường, Hoài Ân, Bình Định', '0987654321', 1, '2024-04-15 09:52:29',0),
-        ('Hồ Minh Hưng', 'Khoa Trường, Hoài Ân, Bình Định', '0867987456', 1, '2024-04-15 09:52:29',0),
-        ('Nguyễn Thị Minh Anh', '123 Phố Huế, Quận Hai Bà Trưng, Hà Nội', '0935123456', 1, '2024-04-16 17:59:57',0),
-        ('Trần Đức Minh', '789 Đường Lê Hồng Phong, Thành phố Đà Nẵng', '0983456789', 1, '2024-04-16 18:08:12',0),
-        ('Lê Hải Yến', '456 Tôn Thất Thuyết, Quận 4, Thành phố Hồ Chí Minh', '0977234567', 1, '2024-04-16 18:08:47',0),
-        ('Phạm Thanh Hằng', '102 Lê Duẩn, Thành phố Hải Phòng', '0965876543', 1, '2024-04-16 18:12:59',0),
-        ('Hoàng Đức Anh', '321 Lý Thường Kiệt, Thành phố Cần Thơ', '0946789012', 1, '2024-04-16 18:13:47',0),
-        ('Ngô Thanh Tùng', '987 Trần Hưng Đạo, Quận 1, Thành phố Hồ Chí Minh', '0912345678', 1, '2024-04-16 18:14:12',0),
-        ('Võ Thị Kim Ngân', '555 Nguyễn Văn Linh, Quận Nam Từ Liêm, Hà Nội', '0916789123', 1, '2024-04-16 18:15:11',0),
-        ('Đỗ Văn Tú', '777 Hùng Vương, Thành phố Huế', '0982345678', 1, '2024-04-30 18:15:56',0),
-        ('Lý Thanh Trúc', '888 Nguyễn Thái Học, Quận Ba Đình, Hà Nội', '0982123456', 1, '2024-04-16 18:16:22',0),
-        ('Bùi Văn Hoàng', '222 Đường 2/4, Thành phố Nha Trang', '0933789012', 1, '2024-04-16 18:16:53',0),
-        ('Lê Văn Thành', '23 Đường 3 Tháng 2, Quận 10, TP. Hồ Chí Minh', '0933456789', 1, '2024-04-16 18:17:46',0),
-        ('Nguyễn Thị Lan Anh', '456 Lê Lợi, Quận 1, TP. Hà Nội', '0965123456', 1, '2024-04-16 18:18:10',0),
-        ('Phạm Thị Mai', '234 Lê Hồng Phong, Quận 5, TP. Hồ Chí Minh', '0946789013', 1, '2024-04-17 18:18:34',0),
-        ('Hoàng Văn Nam', ' 567 Phố Huế, Quận Hai Bà Trưng, Hà Nội', '0912345679', 1, '2024-04-17 18:19:16',0);
+        ('Mặc định', '', '', 1, '2025-04-15 09:52:29',0),
+        ('Nguyễn Văn Anh', '45 An Dương Vương, Phường Chợ Quán, Thành phố Hồ Chí Minh', '0387913347', 1, '2025-04-15 09:52:29',300),
+        ('Trần Nhất Nhất', '270 Hưng Phú, phường Chánh Hưng, Thành phố Hồ Chí Minh', '0123456789', 1, '2025-04-15 09:52:29',300),
+        ('Hoàng Gia Bảo', '45 Trương Đình Hội, phường Phú Định, Thành phố Hồ Chí Minh', '0987654321', 1, '2025-04-15 09:52:29',0),
+        ('Hồ Minh Hưng', '5 Võ Thị Sáu, phường Xuân Hòa, Thành phố Hồ Chí Minh', '0867987456', 1, '2025-04-15 09:52:29',0),
+        ('Nguyễn Thị Minh Anh', '50 Phạm Văn Chí, phường Bình Tiên, Thành phố Hồ Chí Minh', '0935123456', 1, '2025-04-16 17:59:57',0),
+        ('Trần Đức Minh', '789 Lê Hồng Phong, Thành Phố Đà Nẵng', '0983456789', 1, '2025-04-16 18:08:12',0),
+        ('Lê Hải Yến', '180 Hoàng Ngân, Xã Trung Hòa, Hà Nội', '0977234567', 1, '2025-04-16 18:08:47',0),
+        ('Phạm Thanh Hằng', '325 Nguyễn Văn Tăng, Phường Long Bình, Thành phố Hồ Chí Minh', '0965876543', 1, '2025-04-16 18:12:59',0),
+        ('Hoàng Đức Anh', '321 Lý Thường Kiệt, Thành phố Cần Thơ', '0946789012', 1, '2025-04-16 18:13:47',0),
+        ('Ngô Thanh Tùng', '393 Điện Biên Phủ, Phường Bàn Cờ, Thành phố Hồ Chí Minh', '0912345678', 1, '2025-04-16 18:14:12',0),
+        ('Võ Thị Kim Ngân', '123 Đường Lê Lợi, Phường Hồng Bàng 2, Thành phố Hải Phòng', '0916789123', 1, '2025-04-16 18:15:11',0),
+        ('Đỗ Văn Tú', '777 Hùng Vương, Thành phố Huế', '0982345678', 1, '2025-04-30 18:15:56',0),
+        ('Lý Thanh Trúc', '81 Hoàng Cầm, Phường Linh Xuân, Thành phố Hồ Chí Minh', '0982123456', 1, '2025-04-16 18:16:22',0),
+        ('Bùi Văn Hoàng', '222 Đường 2/4, Thành phố Nha Trang', '0933789012', 1, '2025-04-16 18:16:53',0),
+        ('Lê Văn Thành', '23 Đường 3 Tháng 2, phường Hòa Hưng, TP. Hồ Chí Minh', '0933456789', 1, '2025-04-16 18:17:46',0),
+        ('Nguyễn Thị Lan Anh', '45 Hàng Bạc, phường Hoàn Kiếm, TP. Hà Nội', '0965123456', 1, '2025-04-16 18:18:10',0),
+        ('Phạm Thị Mai', '234 Nguyễn Trãi, phường Chợ Quán, TP. Hồ Chí Minh', '0946789013', 1, '2025-04-17 18:18:34',0),
+        ('Hoàng Văn Nam', ' 567 Phố Huế, phường Hai Bà Trưng, Hà Nội', '0912345679', 1, '2025-04-17 18:19:16',0);
 
 INSERT INTO `NHACUNGCAP` (`TEN`, `DIACHI`, `SDT`, `EMAIL`, `TT`)
 VALUES
