@@ -24,7 +24,7 @@ public class PhieuSuaChuaDAO implements DAOinterface<PhieuSuaChuaDTO> {
         int result = 0;
         try {
             Connection con = JDBCUtil.getConnection();
-            String sql = "INSERT INTO `PHIEUSUACHUA`(`MPB`, `MNV`, `NGAYNHAN`, `NGAYTRA`, `NGUYENNHAN`, `TINHTRANG`, `CHIPHI`, `GHICHU`) VALUES (?,?,?,?,?,?,?,?)";
+            String sql = "INSERT INTO PHIEUSUACHUA(MPB, MNV, NGAYNHAN, NGAYTRA, NGUYENNHAN, TINHTRANG, CHIPHI, GHICHU) VALUES (?,?,?,?,?,?,?,?)";
             PreparedStatement pst = con.prepareStatement(sql);
             pst.setInt(1, t.getMPB());
             if (t.getMNV() != null) {
@@ -55,7 +55,7 @@ public class PhieuSuaChuaDAO implements DAOinterface<PhieuSuaChuaDTO> {
         int result = 0;
         try {
             Connection con = JDBCUtil.getConnection();
-            String sql = "UPDATE `PHIEUSUACHUA` SET `MPB`=?, `MNV`=?, `NGAYNHAN`=?, `NGAYTRA`=?, `NGUYENNHAN`=?, `TINHTRANG`=?, `CHIPHI`=?, `GHICHU`=? WHERE `MSC`=?";
+            String sql = "UPDATE PHIEUSUACHUA SET MPB=?, MNV=?, NGAYNHAN=?, NGAYTRA=?, NGUYENNHAN=?, TINHTRANG=?, CHIPHI=?, GHICHU=? WHERE MSC=?";
             PreparedStatement pst = con.prepareStatement(sql);
             pst.setInt(1, t.getMPB());
             if (t.getMNV() != null) {
@@ -87,7 +87,7 @@ public class PhieuSuaChuaDAO implements DAOinterface<PhieuSuaChuaDTO> {
         int result = 0;
         try {
             Connection con = JDBCUtil.getConnection();
-            String sql = "DELETE FROM `PHIEUSUACHUA` WHERE `MSC`=?";
+            String sql = "DELETE FROM PHIEUSUACHUA WHERE MSC=?";
             PreparedStatement pst = con.prepareStatement(sql);
             pst.setString(1, t);
             result = pst.executeUpdate();
@@ -103,7 +103,7 @@ public class PhieuSuaChuaDAO implements DAOinterface<PhieuSuaChuaDTO> {
         ArrayList<PhieuSuaChuaDTO> result = new ArrayList<>();
         try {
             Connection con = JDBCUtil.getConnection();
-            String sql = "SELECT * FROM `PHIEUSUACHUA` ORDER BY MSC DESC";
+            String sql = "SELECT * FROM PHIEUSUACHUA ORDER BY MSC DESC";
             PreparedStatement pst = con.prepareStatement(sql);
             ResultSet rs = pst.executeQuery();
             while (rs.next()) {
@@ -131,7 +131,7 @@ public class PhieuSuaChuaDAO implements DAOinterface<PhieuSuaChuaDTO> {
         PhieuSuaChuaDTO result = null;
         try {
             Connection con = JDBCUtil.getConnection();
-            String sql = "SELECT * FROM `PHIEUSUACHUA` WHERE `MSC`=?";
+            String sql = "SELECT * FROM PHIEUSUACHUA WHERE MSC=?";
             PreparedStatement pst = con.prepareStatement(sql);
             pst.setString(1, t);
             ResultSet rs = pst.executeQuery();
@@ -159,7 +159,7 @@ public class PhieuSuaChuaDAO implements DAOinterface<PhieuSuaChuaDTO> {
         ArrayList<PhieuSuaChuaDTO> result = new ArrayList<>();
         try {
             Connection con = JDBCUtil.getConnection();
-            String sql = "SELECT * FROM `PHIEUSUACHUA` WHERE `MPB`=? ORDER BY MSC DESC";
+            String sql = "SELECT * FROM PHIEUSUACHUA WHERE MPB=? ORDER BY MSC DESC";
             PreparedStatement pst = con.prepareStatement(sql);
             pst.setInt(1, MPB);
             ResultSet rs = pst.executeQuery();
@@ -187,7 +187,7 @@ public class PhieuSuaChuaDAO implements DAOinterface<PhieuSuaChuaDTO> {
         int result = 0;
         try {
             Connection con = JDBCUtil.getConnection();
-            String sql = "UPDATE `PHIEUSUACHUA` SET `TINHTRANG`=? WHERE `MSC`=?";
+            String sql = "UPDATE PHIEUSUACHUA SET TINHTRANG=? WHERE MSC=?";
             PreparedStatement pst = con.prepareStatement(sql);
             pst.setInt(1, tinhTrang);
             pst.setInt(2, MSC);
@@ -204,7 +204,7 @@ public class PhieuSuaChuaDAO implements DAOinterface<PhieuSuaChuaDTO> {
         int result = -1;
         try {
             Connection con = JDBCUtil.getConnection();
-            String sql = "SELECT `AUTO_INCREMENT` FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'QuanLyCuaHangDongHo' AND TABLE_NAME = 'PHIEUSUACHUA'";
+            String sql = "SELECT AUTO_INCREMENT FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'QuanLyCuaHangDongHo' AND TABLE_NAME = 'PHIEUSUACHUA'";
             PreparedStatement pst = con.prepareStatement(sql);
             ResultSet rs = pst.executeQuery();
             if (rs.next()) {

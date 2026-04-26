@@ -28,7 +28,7 @@ public class PhieuXuatDAO implements DAOinterface<PhieuXuatDTO> {
         int result = 0;
         try {
             Connection con = (Connection) JDBCUtil.getConnection();
-            String sql = "INSERT INTO `PHIEUXUAT` (`MNV`, `MKH`, `TIEN`, `TG`, `TT`, `DIEMTICHLUY`) VALUES (?,?,?,?,?,?)";
+            String sql = "INSERT INTO PHIEUXUAT (MNV, MKH, TIEN, TG, TT, DIEMTICHLUY) VALUES (?,?,?,?,?,?)";
             PreparedStatement pst = con.prepareStatement(sql);
             pst.setInt(1, t.getMNV());
             pst.setInt(2, t.getMKH());
@@ -49,7 +49,7 @@ public class PhieuXuatDAO implements DAOinterface<PhieuXuatDTO> {
         int generatedId = -1;
         try {
             Connection con = (Connection) JDBCUtil.getConnection();
-            String sql = "INSERT INTO `PHIEUXUAT` (`MNV`, `MKH`, `TIEN`, `TG`, `TT`, `DIEMTICHLUY`) VALUES (?,?,?,?,?,?)";
+            String sql = "INSERT INTO PHIEUXUAT (MNV, MKH, TIEN, TG, TT, DIEMTICHLUY) VALUES (?,?,?,?,?,?)";
             PreparedStatement pst = con.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
             pst.setInt(1, t.getMNV());
             pst.setInt(2, t.getMKH());
@@ -80,7 +80,7 @@ public class PhieuXuatDAO implements DAOinterface<PhieuXuatDTO> {
         int result = 0 ;
         try {
             Connection con = (Connection) JDBCUtil.getConnection();
-            String sql = "UPDATE `PHIEUXUAT` SET `MNV`=?, `MKH`=?, `TIEN`=?, `TG`=?, `TT`=?, `DIEMTICHLUY` = ? WHERE `MHD`=?";
+            String sql = "UPDATE PHIEUXUAT SET MNV=?, MKH=?, TIEN=?, TG=?, TT=?, DIEMTICHLUY = ? WHERE MHD=?";
             PreparedStatement pst = (PreparedStatement) con.prepareStatement(sql);
             pst.setInt(1, t.getMNV());
             pst.setInt(2, t.getMKH());
@@ -227,7 +227,7 @@ public class PhieuXuatDAO implements DAOinterface<PhieuXuatDTO> {
         int result = 0 ;
         try {
             Connection con = (Connection) JDBCUtil.getConnection();
-            String sql = "DELETE FROM `PHIEUXUAT` WHERE MHD = ?";
+            String sql = "DELETE FROM PHIEUXUAT WHERE MHD = ?";
             PreparedStatement pst = (PreparedStatement) con.prepareStatement(sql);
             pst.setInt(1, t);
             result = pst.executeUpdate();
@@ -318,7 +318,7 @@ public class PhieuXuatDAO implements DAOinterface<PhieuXuatDTO> {
         int result = -1;
         try {
             Connection con = (Connection) JDBCUtil.getConnection();
-            String sql = "SELECT `AUTO_INCREMENT` FROM  INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'QuanLyCuaHangDongHo' AND TABLE_NAME   = 'PHIEUXUAT'";
+            String sql = "SELECT AUTO_INCREMENT FROM  INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'QuanLyCuaHangDongHo' AND TABLE_NAME   = 'PHIEUXUAT'";
             PreparedStatement pst = (PreparedStatement) con.prepareStatement(sql);
             ResultSet rs2 = pst.executeQuery(sql);
             if (!rs2.isBeforeFirst() ) {

@@ -22,7 +22,7 @@ public class NhanVienDAO implements DAOinterface<NhanVienDTO>{
         int result = 0 ;
         try {
             Connection con = (Connection) JDBCUtil.getConnection();
-            String sql = "INSERT INTO `NHANVIEN`(`HOTEN`, `GIOITINH`,`SDT`,`NGAYSINH`,`TT`,`EMAIL`, `MCV`) VALUES (?,?,?,?,?,?,?)";
+            String sql = "INSERT INTO NHANVIEN(HOTEN, GIOITINH,SDT,NGAYSINH,TT,EMAIL, MCV) VALUES (?,?,?,?,?,?,?)";
             PreparedStatement pst = (PreparedStatement) con.prepareStatement(sql);
             pst.setString(1, t.getHOTEN());
             pst.setInt(2, t.getGIOITINH());
@@ -44,7 +44,7 @@ public class NhanVienDAO implements DAOinterface<NhanVienDTO>{
         int result = 0 ;
         try {
             Connection con = (Connection) JDBCUtil.getConnection();
-            String sql = "UPDATE `NHANVIEN` SET `HOTEN` = ?,`GIOITINH` = ?,`NGAYSINH` = ?,`SDT` = ?, `TT` = ?, `EMAIL` = ?, `MCV` = ?  WHERE `MNV` = ?";
+            String sql = "UPDATE NHANVIEN SET HOTEN = ?,GIOITINH = ?,NGAYSINH = ?,SDT = ?, TT = ?, EMAIL = ?, MCV = ?  WHERE MNV = ?";
             PreparedStatement pst = (PreparedStatement) con.prepareStatement(sql);
             pst.setString(1, t.getHOTEN());
             pst.setInt(2, t.getGIOITINH());
@@ -67,7 +67,7 @@ public class NhanVienDAO implements DAOinterface<NhanVienDTO>{
         int result = 0 ;
         try {
             Connection con = (Connection) JDBCUtil.getConnection();
-            String sql = "UPDATE NHANVIEN SET `TT` = -1 WHERE MNV = ?";
+            String sql = "UPDATE NHANVIEN SET TT = -1 WHERE MNV = ?";
             PreparedStatement pst = (PreparedStatement) con.prepareStatement(sql);
             pst.setString(1, t);
             result = pst.executeUpdate();
@@ -83,7 +83,7 @@ public class NhanVienDAO implements DAOinterface<NhanVienDTO>{
         ArrayList<NhanVienDTO> result = new ArrayList<NhanVienDTO>();
         try {
             Connection con = (Connection) JDBCUtil.getConnection();
-            String sql = "SELECT * FROM NHANVIEN WHERE `TT` = 1";
+            String sql = "SELECT * FROM NHANVIEN WHERE TT = 1";
             PreparedStatement pst = (PreparedStatement) con.prepareStatement(sql);
             ResultSet rs = (ResultSet) pst.executeQuery();
             while(rs.next()) {
@@ -215,7 +215,7 @@ public class NhanVienDAO implements DAOinterface<NhanVienDTO>{
         int result = -1;
         try {
             Connection con = (Connection) JDBCUtil.getConnection();
-            String sql = "SELECT `AUTO_INCREMENT` FROM  INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'QuanLyCuaHangDongHo' AND   TABLE_NAME   = 'NHANVIEN'";
+            String sql = "SELECT AUTO_INCREMENT FROM  INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'QuanLyCuaHangDongHo' AND   TABLE_NAME   = 'NHANVIEN'";
             PreparedStatement pst = (PreparedStatement) con.prepareStatement(sql);
             ResultSet rs2 = pst.executeQuery(sql);
             if (!rs2.isBeforeFirst() ) {

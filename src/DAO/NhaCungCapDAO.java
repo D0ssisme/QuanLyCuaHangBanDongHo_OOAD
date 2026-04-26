@@ -22,7 +22,7 @@ public class NhaCungCapDAO implements DAOinterface<NhaCungCapDTO> {
         int result = 0;
         try {
             Connection con = (Connection) JDBCUtil.getConnection();
-            String sql = "INSERT INTO `NHACUNGCAP`(`MNCC`, `TEN`, `DIACHI`, `EMAIL`, `SDT`, `TT`) VALUES (?,?,?,?,?,1)";
+            String sql = "INSERT INTO NHACUNGCAP(MNCC, TEN, DIACHI, EMAIL, SDT, TT) VALUES (?,?,?,?,?,1)";
             PreparedStatement pst = (PreparedStatement) con.prepareStatement(sql);
             pst.setInt(1, t.getMancc());
             pst.setString(2, t.getTenncc());
@@ -42,7 +42,7 @@ public class NhaCungCapDAO implements DAOinterface<NhaCungCapDTO> {
         int result = 0;
         try {
             Connection con = (Connection) JDBCUtil.getConnection();
-            String sql = "UPDATE `NHACUNGCAP` SET `TEN`=?,`DIACHI`=?,`EMAIL`=?,`SDT`=? WHERE `MNCC`= ?";
+            String sql = "UPDATE NHACUNGCAP SET TEN=?,DIACHI=?,EMAIL=?,SDT=? WHERE MNCC= ?";
             PreparedStatement pst = (PreparedStatement) con.prepareStatement(sql);
             pst.setString(1, t.getTenncc());
             pst.setString(2, t.getDiachi());
@@ -127,7 +127,7 @@ public class NhaCungCapDAO implements DAOinterface<NhaCungCapDTO> {
         int result = -1;
         try {
             Connection con = (Connection) JDBCUtil.getConnection();
-            String sql = "SELECT `AUTO_INCREMENT` FROM  INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'QuanLyCuaHangDongHo' AND   TABLE_NAME   = 'NHACUNGCAP'";
+            String sql = "SELECT AUTO_INCREMENT FROM  INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'QuanLyCuaHangDongHo' AND   TABLE_NAME   = 'NHACUNGCAP'";
             PreparedStatement pst = (PreparedStatement) con.prepareStatement(sql);
             ResultSet rs2 = pst.executeQuery(sql);
             if (!rs2.isBeforeFirst()) {

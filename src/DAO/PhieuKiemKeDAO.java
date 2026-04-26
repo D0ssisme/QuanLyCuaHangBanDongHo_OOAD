@@ -23,7 +23,7 @@ public class PhieuKiemKeDAO implements DAOinterface<PhieuKiemKeDTO>{
         int result = 0;
         try {
             Connection con = (Connection) JDBCUtil.getConnection();
-            String sql = "INSERT INTO `PHIEUKIEMKE`(`MNV`,`TG` ,`TT`) VALUES (?,?,1)";
+            String sql = "INSERT INTO PHIEUKIEMKE(MNV,TG ,TT) VALUES (?,?,1)";
             PreparedStatement pst = con.prepareStatement(sql);
             pst.setInt(1, t.getNguoitao());
             pst.setTimestamp(2, t.getThoigiantao());
@@ -88,7 +88,7 @@ public class PhieuKiemKeDAO implements DAOinterface<PhieuKiemKeDTO>{
         int result = -1;
         try {
             Connection con = (Connection) JDBCUtil.getConnection();
-            String sql = "SELECT `AUTO_INCREMENT` FROM  INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'QuanLyCuaHangDongHo' AND TABLE_NAME   = 'PHIEUKIEMKE'";
+            String sql = "SELECT AUTO_INCREMENT FROM  INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'QuanLyCuaHangDongHo' AND TABLE_NAME   = 'PHIEUKIEMKE'";
             PreparedStatement pst = (PreparedStatement) con.prepareStatement(sql);
             ResultSet rs2 = pst.executeQuery(sql);
             if (!rs2.isBeforeFirst()) {

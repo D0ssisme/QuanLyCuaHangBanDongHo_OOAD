@@ -26,7 +26,7 @@ public class PhieuNhapDAO implements DAOinterface<PhieuNhapDTO> {
         int result = 0;
         try {
             Connection con = (Connection) JDBCUtil.getConnection();
-            String sql = "INSERT INTO `PHIEUNHAP` (`MNV`, `MNCC`, `TIEN`, `TG`, `TT`) VALUES (?,?,?,?,?)";
+            String sql = "INSERT INTO PHIEUNHAP (MNV, MNCC, TIEN, TG, TT) VALUES (?,?,?,?,?)";
             PreparedStatement pst = con.prepareStatement(sql);
             pst.setInt(1, t.getMNV());
             pst.setInt(2, t.getMNCC());
@@ -46,7 +46,7 @@ public class PhieuNhapDAO implements DAOinterface<PhieuNhapDTO> {
         int result = 0;
         try {
             Connection con = (Connection) JDBCUtil.getConnection();
-            String sql = "UPDATE `PHIEUNHAP` SET `TG`=?,`MNCC`=?,`TIEN`=?,`TT`=? WHERE `MPN`=?";
+            String sql = "UPDATE PHIEUNHAP SET TG=?,MNCC=?,TIEN=?,TT=? WHERE MPN=?";
             PreparedStatement pst = (PreparedStatement) con.prepareStatement(sql);
             pst.setTimestamp(1, t.getTG());
             pst.setInt(2, t.getMNCC());
@@ -225,7 +225,7 @@ public class PhieuNhapDAO implements DAOinterface<PhieuNhapDTO> {
         int result = -1;
         try {
             Connection con = (Connection) JDBCUtil.getConnection();
-            String sql = "SELECT `AUTO_INCREMENT` FROM  INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'QuanLyCuaHangDongHo' AND TABLE_NAME   = 'PHIEUNHAP'";
+            String sql = "SELECT AUTO_INCREMENT FROM  INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'QuanLyCuaHangDongHo' AND TABLE_NAME   = 'PHIEUNHAP'";
             PreparedStatement pst = (PreparedStatement) con.prepareStatement(sql);
             ResultSet rs2 = pst.executeQuery(sql);
             if (!rs2.isBeforeFirst()) {

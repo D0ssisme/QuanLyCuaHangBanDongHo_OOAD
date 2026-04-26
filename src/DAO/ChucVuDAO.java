@@ -21,7 +21,7 @@ public class ChucVuDAO implements DAOinterface<ChucVuDTO>{
         int result = 0 ;
         try {
             Connection con = (Connection) JDBCUtil.getConnection();
-            String sql = "INSERT INTO `CHUCVU`(`TEN`, `MUCLUONG`,`TT`) VALUES (?,?,1)";
+            String sql = "INSERT INTO CHUCVU(TEN, MUCLUONG,TT) VALUES (?,?,1)";
             PreparedStatement pst = (PreparedStatement) con.prepareStatement(sql);
             pst.setString(1, t.getTENCV());
             pst.setInt(2, t.getMUCLUONG());
@@ -38,7 +38,7 @@ public class ChucVuDAO implements DAOinterface<ChucVuDTO>{
         int result = 0 ;
         try {
             Connection con = (Connection) JDBCUtil.getConnection();
-            String sql = "UPDATE `CHUCVU` SET `TEN` = ?, `MUCLUONG` = ? WHERE `MCV` = ?";
+            String sql = "UPDATE CHUCVU SET TEN = ?, MUCLUONG = ? WHERE MCV = ?";
             PreparedStatement pst = (PreparedStatement) con.prepareStatement(sql);
             pst.setString(1, t.getTENCV());
             pst.setInt(2, t.getMUCLUONG());
@@ -56,7 +56,7 @@ public class ChucVuDAO implements DAOinterface<ChucVuDTO>{
         int result = 0 ;
         try {
             Connection con = (Connection) JDBCUtil.getConnection();
-            String sql = "UPDATE ChucVu SET `TT` = 0 WHERE MCV = ?";
+            String sql = "UPDATE ChucVu SET TT = 0 WHERE MCV = ?";
             PreparedStatement pst = (PreparedStatement) con.prepareStatement(sql);
             pst.setString(1, t);
             result = pst.executeUpdate();
@@ -72,7 +72,7 @@ public class ChucVuDAO implements DAOinterface<ChucVuDTO>{
         ArrayList<ChucVuDTO> result = new ArrayList<ChucVuDTO>();
         try {
             Connection con = (Connection) JDBCUtil.getConnection();
-            String sql = "SELECT * FROM CHUCVU WHERE `TT` = 1";
+            String sql = "SELECT * FROM CHUCVU WHERE TT = 1";
             PreparedStatement pst = (PreparedStatement) con.prepareStatement(sql);
             ResultSet rs = (ResultSet) pst.executeQuery();
             while(rs.next()) {
@@ -138,7 +138,7 @@ public class ChucVuDAO implements DAOinterface<ChucVuDTO>{
         int result = -1;
         try {
             Connection con = (Connection) JDBCUtil.getConnection();
-            String sql = "SELECT `AUTO_INCREMENT` FROM  INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'QuanLyCuaHangDongHo' AND   TABLE_NAME   = 'ChucVu'";
+            String sql = "SELECT AUTO_INCREMENT FROM  INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'QuanLyCuaHangDongHo' AND   TABLE_NAME   = 'ChucVu'";
             PreparedStatement pst = (PreparedStatement) con.prepareStatement(sql);
             ResultSet rs2 = pst.executeQuery(sql);
             if (!rs2.isBeforeFirst() ) {

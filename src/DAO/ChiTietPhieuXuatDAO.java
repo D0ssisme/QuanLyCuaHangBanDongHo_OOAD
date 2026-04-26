@@ -28,7 +28,7 @@ public class ChiTietPhieuXuatDAO implements ChiTietInterface<ChiTietPhieuXuatDTO
                 SanPhamDAO.getInstance().updateSoLuongTon(t.get(i).getMSP(), SL);
                 
                 // Sau đó insert chi tiết phiếu xuất
-                String sql = "INSERT INTO `CTPHIEUXUAT` (`MHD`, `MSP`, `SL`, `TIENXUAT`, `MKM`) VALUES (?,?,?,?,?)";
+                String sql = "INSERT INTO CTPHIEUXUAT (MHD, MSP, SL, TIENXUAT, MKM) VALUES (?,?,?,?,?)";
                 PreparedStatement pst = (PreparedStatement) con.prepareStatement(sql);
                 pst.setInt(1, t.get(i).getMP());
                 pst.setInt(2, t.get(i).getMSP());

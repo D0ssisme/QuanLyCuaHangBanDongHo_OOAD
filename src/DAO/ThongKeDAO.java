@@ -354,25 +354,31 @@ public class ThongKeDAO {
         ArrayList<ThongKeTungNgayTrongThangDTO> result = new ArrayList<>();
         try {
             Connection con = JDBCUtil.getConnection();
-            String sql = """
-                            WITH RECURSIVE dates(date) AS (
-                                SELECT DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 7 DAY), '%Y-%m-%d') -- Ngày bắt đầu
-                                UNION ALL
-                                SELECT DATE_FORMAT(DATE_ADD(date, INTERVAL 1 DAY), '%Y-%m-%d') -- Thêm từng ngày
-                                FROM dates
-                                WHERE date < DATE_FORMAT(CURDATE(), '%Y-%m-%d') -- Ngày kết thúc
-                            )
-                            SELECT 
-                                dates.date AS ngay,
-                                COALESCE(SUM(CTPHIEUXUAT.TIENXUAT), 0) AS doanhthu,
-                                COALESCE(SUM(CTPHIEUNHAP.TIENNHAP), 0) AS chiphi
-                            FROM dates
-                            LEFT JOIN PHIEUXUAT ON DATE_FORMAT(PHIEUXUAT.TG, '%Y-%m-%d') = dates.date -- So sánh định dạng ngày
-                            LEFT JOIN CTPHIEUXUAT ON PHIEUXUAT.MHD = CTPHIEUXUAT.MHD
-                            LEFT JOIN SANPHAM ON SANPHAM.MSP = CTPHIEUXUAT.MSP
-                            LEFT JOIN CTPHIEUNHAP ON SANPHAM.MSP = CTPHIEUNHAP.MSP
-                            GROUP BY dates.date
-                            ORDER BY dates.date;""";
+           String sql = """
+;WITH dates AS (
+    SELECT CAST(DATEADD(DAY, -6, GETDATE()) AS DATE) AS date
+    UNION ALL
+    SELECT DATEADD(DAY, 1, date)
+    FROM dates
+    WHERE date < CAST(GETDATE() AS DATE)
+)
+SELECT 
+    dates.date AS ngay,
+    COALESCE(SUM(CTPHIEUXUAT.TIENXUAT), 0) AS doanhthu,
+    COALESCE(SUM(CTPHIEUNHAP.TIENNHAP), 0) AS chiphi
+FROM dates
+LEFT JOIN PHIEUXUAT 
+    ON CAST(PHIEUXUAT.TG AS DATE) = dates.date
+LEFT JOIN CTPHIEUXUAT 
+    ON PHIEUXUAT.MHD = CTPHIEUXUAT.MHD
+LEFT JOIN SANPHAM 
+    ON SANPHAM.MSP = CTPHIEUXUAT.MSP
+LEFT JOIN CTPHIEUNHAP 
+    ON SANPHAM.MSP = CTPHIEUNHAP.MSP
+GROUP BY dates.date
+ORDER BY dates.date
+OPTION (MAXRECURSION 100);
+""";
             PreparedStatement pst = con.prepareStatement(sql);
             ResultSet rs = pst.executeQuery();
             while (rs.next()) {

@@ -225,6 +225,15 @@ public class login_page extends JFrame implements KeyListener {
     public void keyTyped(KeyEvent e) {}
 
     public static void main(String[] args) {
+         java.sql.Connection conn = config.JDBCUtil.getConnection();
+    if (conn != null) {
+        System.out.println(" ket noi thanh cong !");
+        config.JDBCUtil.closeConnection(conn);
+    } else {
+        System.out.println("❌ ket noi that bai !");
+        return; // Dừng app nếu không kết nối được
+    }
+
         FlatRobotoFont.install();
         FlatLaf.setPreferredFontFamily(FlatRobotoFont.FAMILY);
         FlatLaf.setPreferredLightFontFamily(FlatRobotoFont.FAMILY_LIGHT);

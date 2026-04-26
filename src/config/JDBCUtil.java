@@ -1,24 +1,22 @@
 package config;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import javax.swing.JOptionPane;
 
 public class JDBCUtil {
-
     public static Connection getConnection() {
         Connection result = null;
         try {
-            // Dang ky MySQL Driver voi DriverManager
-            DriverManager.registerDriver(new com.mysql.cj.jdbc.Driver());
-            //Cac thong so
-            String url = "jdbc:mySQL://localhost:3306/QuanLyCuaHangDongHo";
-            String userName = "projects";
-            String password = "12345678";
-            //Tao ket noi 
+            // Đăng ký SQL Server Driver
+            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+            // Thông số kết nối SQL Server
+            String url = "jdbc:sqlserver://localhost:1433;databaseName=quanlycuahangdongho;encrypt=false";
+            String userName = "sa";
+            String password = "cc123123"; // mật khẩu SQL Server của bạn
+            // Tạo kết nối
             result = DriverManager.getConnection(url, userName, password);
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "Không thể kết nối đến cơ sở dữ liệu !", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Không thể kết nối đến cơ sở dữ liệu!\n" + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
         return result;
     }
@@ -29,9 +27,7 @@ public class JDBCUtil {
                 c.close();
             }
         } catch (Exception e) {
-            // TODO: handle exception
             e.printStackTrace();
         }
     }
 }
-

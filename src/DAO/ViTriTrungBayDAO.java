@@ -22,7 +22,7 @@ public class ViTriTrungBayDAO implements DAOinterface<ViTriTrungBayDTO> {
         int result = 0;
         try {
             Connection con = (Connection) JDBCUtil.getConnection();
-            String sql = "INSERT INTO `VITRITUNGBAY`(`TEN`, `GHICHU`) VALUES (?,?)";
+            String sql = "INSERT INTO VITRITUNGBAY(TEN, GHICHU) VALUES (?,?)";
             PreparedStatement pst = (PreparedStatement) con.prepareStatement(sql);
             pst.setString(1, t.getTEN());
             pst.setString(2, t.getGHICHU());
@@ -39,7 +39,7 @@ public class ViTriTrungBayDAO implements DAOinterface<ViTriTrungBayDTO> {
         int result = 0;
         try {
             Connection con = (Connection) JDBCUtil.getConnection();
-            String sql = "UPDATE `VITRITUNGBAY` SET `TEN`=?,`GHICHU`=? WHERE `MVT`=?";
+            String sql = "UPDATE VITRITUNGBAY SET TEN=?,GHICHU=? WHERE MVT=?";
             PreparedStatement pst = (PreparedStatement) con.prepareStatement(sql);
             pst.setString(1, t.getTEN());
             pst.setString(2, t.getGHICHU());
@@ -57,7 +57,7 @@ public class ViTriTrungBayDAO implements DAOinterface<ViTriTrungBayDTO> {
         int result = 0;
         try {
             Connection con = (Connection) JDBCUtil.getConnection();
-            String sql = "DELETE FROM VITRITUNGBAY WHERE `MVT` = ?";
+            String sql = "DELETE FROM VITRITUNGBAY WHERE MVT = ?";
             PreparedStatement pst = (PreparedStatement) con.prepareStatement(sql);
             pst.setString(1, t);
             result = pst.executeUpdate();
@@ -117,7 +117,7 @@ public class ViTriTrungBayDAO implements DAOinterface<ViTriTrungBayDTO> {
         int result = -1;
         try {
             Connection con = (Connection) JDBCUtil.getConnection();
-            String sql = "SELECT `AUTO_INCREMENT` FROM  INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'quanlycuahangdongho' AND TABLE_NAME = 'VITRITUNGBAY'";
+            String sql = "SELECT AUTO_INCREMENT FROM  INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'quanlycuahangdongho' AND TABLE_NAME = 'VITRITUNGBAY'";
             PreparedStatement pst = (PreparedStatement) con.prepareStatement(sql);
             ResultSet rs2 = pst.executeQuery(sql);
             if (!rs2.isBeforeFirst()) {
