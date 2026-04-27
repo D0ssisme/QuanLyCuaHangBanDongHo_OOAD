@@ -95,7 +95,7 @@ public class NhanVienDAO implements DAOinterface<NhanVienDTO>{
                 int TT = rs.getInt("TT");
                 String EMAIL = rs.getString("EMAIL");
                 int MCV = rs.getInt("MCV");
-                String MCN=rs.getMCN("MCN");
+                String MCN=rs.getString("MCN");
                 NhanVienDTO nv = new NhanVienDTO(MNV, HOTEN, GIOITINH, SDT, NGAYSINH, TT, EMAIL, MCV,MCN);
                 result.add(nv);
             }
@@ -123,7 +123,8 @@ public class NhanVienDAO implements DAOinterface<NhanVienDTO>{
                 int TT = rs.getInt("TT");
                 String EMAIL = rs.getString("EMAIL");
                 int MCV = rs.getInt("MCV");
-                NhanVienDTO nv = new NhanVienDTO(MNV, HOTEN, GIOITINH, SDT, NGAYSINH, TT, EMAIL, MCV);
+                 String MCN=rs.getString("MCN");
+                NhanVienDTO nv = new NhanVienDTO(MNV, HOTEN, GIOITINH, SDT, NGAYSINH, TT, EMAIL, MCV,MCN);
                 result.add(nv);
             }
             JDBCUtil.closeConnection(con);
@@ -149,7 +150,8 @@ public class NhanVienDAO implements DAOinterface<NhanVienDTO>{
                 int TT = rs.getInt("TT");
                 String EMAIL = rs.getString("EMAIL");
                 int MCV = rs.getInt("MCV");
-                NhanVienDTO nv = new NhanVienDTO(MNV, HOTEN, GIOITINH, SDT, NGAYSINH, TT, EMAIL, MCV);
+                 String MCN=rs.getString("MCN");
+                NhanVienDTO nv = new NhanVienDTO(MNV, HOTEN, GIOITINH, SDT, NGAYSINH, TT, EMAIL, MCV,MCN);
                 result.add(nv);
             }
             JDBCUtil.closeConnection(con);
@@ -178,7 +180,8 @@ public class NhanVienDAO implements DAOinterface<NhanVienDTO>{
                 int TT = rs.getInt("TT");
                 String EMAIL = rs.getString("EMAIL");
                 int MCV = rs.getInt("MCV");
-                result = new NhanVienDTO(MNV, HOTEN, GIOITINH, SDT, NGAYSINH, TT, EMAIL, MCV);
+                 String MCN=rs.getString("MCN");
+                result = new NhanVienDTO(MNV, HOTEN, GIOITINH, SDT, NGAYSINH, TT, EMAIL, MCV,MCN);
             }
             JDBCUtil.closeConnection(con);
         } catch (Exception e) {
@@ -203,7 +206,8 @@ public class NhanVienDAO implements DAOinterface<NhanVienDTO>{
                 int TT = rs.getInt("TT");
                 String EMAIL = rs.getString("EMAIL");
                 int MCV = rs.getInt("MCV");
-                result = new NhanVienDTO(MNV, HOTEN, GIOITINH, SDT, NGAYSINH, TT, EMAIL, MCV);
+                 String MCN=rs.getString("MCN");
+                result = new NhanVienDTO(MNV, HOTEN, GIOITINH, SDT, NGAYSINH, TT, EMAIL, MCV,MCN);
             }
             JDBCUtil.closeConnection(con);
         } catch (Exception e) {
