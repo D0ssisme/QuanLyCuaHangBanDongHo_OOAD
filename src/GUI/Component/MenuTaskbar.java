@@ -29,7 +29,7 @@ import DTO.TaiKhoanDTO;
 import GUI.Main;
 import GUI.login_page;
 import GUI.Dialog.MyAccount;
-import GUI.Panel.BaoHanh;
+
 import GUI.Panel.ChucVu;
 import GUI.Panel.KhachHang;
 import GUI.Panel.MaKhuyenMai;
@@ -39,17 +39,17 @@ import GUI.Panel.PhanQuyen;
 import GUI.Panel.PhieuNhap;
 import GUI.Panel.PhieuXuat;
 import GUI.Panel.SanPham;
-import GUI.Panel.SuaChua;
+
 import GUI.Panel.TaiKhoan;
 import GUI.Panel.TongQuan;
-import GUI.Panel.ViTriTrungBay;
+
 import GUI.Panel.ThongKe.ThongKe;
 
 public class MenuTaskbar extends JPanel {
 
     TongQuan tongQuan;
     SanPham sanPham;
-    ViTriTrungBay viTriTrungBay;
+   
     MaKhuyenMai maKhuyenMai;
     NhanVien nhanVien;
     ChucVu chucVu;
@@ -57,8 +57,7 @@ public class MenuTaskbar extends JPanel {
     NhaCungCap nhacungcap;
     PhieuNhap phieuNhap;
     PhieuXuat phieuXuat;
-    BaoHanh baoHanh;
-    SuaChua suaChua;
+ 
     PhanQuyen phanQuyen;
     TaiKhoan taiKhoan;
     ThongKe thongKe;
@@ -66,7 +65,7 @@ public class MenuTaskbar extends JPanel {
     String[][] getSt = {
             { "Tổng quan", "Dashboard.svg", "tongQuan" },
             { "Sản phẩm", "Watch.svg", "sanpham" },
-            { "Vị trí trưng bày", "locationdisplay.svg", "vitritrungbay" },
+          
             { "Mã khuyến mãi", "sale.svg", "makhuyenmai" },
             { "Nhân viên", "staff.svg", "nhanvien" },
             { "Chức vụ", "position.svg", "chucvu" },
@@ -74,8 +73,8 @@ public class MenuTaskbar extends JPanel {
             { "Nhà cung cấp", "supplier.svg", "nhacungcap" },
             { "Phiếu xuất", "export.svg", "phieuxuat" },
             { "Phiếu nhập", "import.svg", "phieunhap" },
-            { "Bảo hành", "guarantee.svg", "baohanh" },
-            { "Sửa chữa", "repair.svg", "suachua" },
+          
+          
             { "Phân quyền", "protect.svg", "nhomquyen" },
             { "Tài khoản", "account.svg", "taikhoan" },
             { "Thống kê", "statistical.svg", "thongke" },
@@ -240,20 +239,17 @@ public class MenuTaskbar extends JPanel {
         switch (index) {
             case 0 -> { tongQuan = new TongQuan(user); main.setPanel(tongQuan); }
             case 1 -> { sanPham = new SanPham(main); main.setPanel(sanPham); }
-            case 2 -> { viTriTrungBay = new ViTriTrungBay(main); main.setPanel(viTriTrungBay); }
-            case 3 -> { maKhuyenMai = new MaKhuyenMai(main, nhanVienDTO); main.setPanel(maKhuyenMai); }
-            case 4 -> { nhanVien = new NhanVien(main); main.setPanel(nhanVien); }
-            case 5 -> { chucVu = new ChucVu(main); main.setPanel(chucVu); }
-            case 6 -> { khachHang = new KhachHang(main); main.setPanel(khachHang); }
-            case 7 -> { nhacungcap = new NhaCungCap(main); main.setPanel(nhacungcap); }
-            case 8 -> { phieuXuat = new PhieuXuat(main, user); main.setPanel(phieuXuat); }
-            case 9 -> { phieuNhap = new PhieuNhap(main, nhanVienDTO); main.setPanel(phieuNhap); }
-            case 10 -> { baoHanh = new BaoHanh(main); main.setPanel(baoHanh); }
-            case 11 -> { suaChua = new SuaChua(main); main.setPanel(suaChua); }
-            case 12 -> { phanQuyen = new PhanQuyen(main); main.setPanel(phanQuyen); }
-            case 13 -> { taiKhoan = new TaiKhoan(main); main.setPanel(taiKhoan); }
-            case 14 -> { thongKe = new ThongKe(); main.setPanel(thongKe); }
-            case 15 -> {
+            case 2 -> { maKhuyenMai = new MaKhuyenMai(main, nhanVienDTO); main.setPanel(maKhuyenMai); }
+            case 3 -> { nhanVien = new NhanVien(main); main.setPanel(nhanVien); }
+            case 4 -> { chucVu = new ChucVu(main); main.setPanel(chucVu); }
+            case 5 -> { khachHang = new KhachHang(main); main.setPanel(khachHang); }
+            case 6 -> { nhacungcap = new NhaCungCap(main); main.setPanel(nhacungcap); }
+            case 7 -> { phieuXuat = new PhieuXuat(main, user); main.setPanel(phieuXuat); }
+            case 8 -> { phieuNhap = new PhieuNhap(main, nhanVienDTO); main.setPanel(phieuNhap); }
+            case 9 -> { phanQuyen = new PhanQuyen(main); main.setPanel(phanQuyen); }
+            case 10 -> { taiKhoan = new TaiKhoan(main); main.setPanel(taiKhoan); }
+            case 11 -> { thongKe = new ThongKe(); main.setPanel(thongKe); }
+            case 12 -> {
                 int confirm = JOptionPane.showConfirmDialog(null, 
                     "Bạn muốn đăng xuất?", "Đăng xuất", 
                     JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE);

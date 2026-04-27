@@ -95,7 +95,8 @@ public class NhanVienDAO implements DAOinterface<NhanVienDTO>{
                 int TT = rs.getInt("TT");
                 String EMAIL = rs.getString("EMAIL");
                 int MCV = rs.getInt("MCV");
-                NhanVienDTO nv = new NhanVienDTO(MNV, HOTEN, GIOITINH, SDT, NGAYSINH, TT, EMAIL, MCV);
+                String MCN=rs.getMCN("MCN");
+                NhanVienDTO nv = new NhanVienDTO(MNV, HOTEN, GIOITINH, SDT, NGAYSINH, TT, EMAIL, MCV,MCN);
                 result.add(nv);
             }
             JDBCUtil.closeConnection(con);
