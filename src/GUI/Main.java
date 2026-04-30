@@ -17,6 +17,7 @@ import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont;
 
 import DTO.TaiKhoanDTO;
 import DAO.NhanVienDAO;
+import config.JDBCUtil;
 import GUI.Component.MenuTaskbar;
 import GUI.Panel.TongQuan;
 
@@ -62,6 +63,7 @@ public class Main extends JFrame {
        
         mcn = NhanVienDAO.getInstance().getMCNByMNV(user.getMNV());
         this.user = user;
+        JDBCUtil.setCurrentMcn(mcn);
         
         initComponent();
         FlatRobotoFont.install();

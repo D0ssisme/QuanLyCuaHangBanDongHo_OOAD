@@ -245,17 +245,17 @@ public class MenuTaskbar extends JPanel {
 
     private void handleMenuClick(int index) {
         switch (index) {
-            case 0 -> { tongQuan = new TongQuan(user); main.setPanel(tongQuan); }
-            case 1 -> { sanPham = new SanPham(main, nhanVienDTO); main.setPanel(sanPham); }
-            case 2 -> { maKhuyenMai = new MaKhuyenMai(main, nhanVienDTO); main.setPanel(maKhuyenMai); }
-            case 3 -> { nhanVien = new NhanVien(main,nhanVienDTO); main.setPanel(nhanVien); }
-            case 4 -> { chucVu = new ChucVu(main); main.setPanel(chucVu); }
-            case 5 -> { khachHang = new KhachHang(main); main.setPanel(khachHang); }
-            case 6 -> { nhacungcap = new NhaCungCap(main); main.setPanel(nhacungcap); }
-            case 7 -> { phieuXuat = new PhieuXuat(main, nhanVienDTO); main.setPanel(phieuXuat); }
-            case 8 -> { phieuNhap = new PhieuNhap(main, nhanVienDTO); main.setPanel(phieuNhap); }
-            case 9 -> { phanQuyen = new PhanQuyen(main); main.setPanel(phanQuyen); }
-            case 10 -> { taiKhoan = new TaiKhoan(main); main.setPanel(taiKhoan); }
+            case 0 -> main.setPanel(getTongQuanPanel());
+            case 1 -> main.setPanel(getSanPhamPanel());
+            case 2 -> main.setPanel(getMaKhuyenMaiPanel());
+            case 3 -> main.setPanel(getNhanVienPanel());
+            case 4 -> main.setPanel(getChucVuPanel());
+            case 5 -> main.setPanel(getKhachHangPanel());
+            case 6 -> main.setPanel(getNhaCungCapPanel());
+            case 7 -> main.setPanel(getPhieuXuatPanel());
+            case 8 -> main.setPanel(getPhieuNhapPanel());
+            case 9 -> main.setPanel(getPhanQuyenPanel());
+            case 10 -> main.setPanel(getTaiKhoanPanel());
          
             case 12 -> {
     int confirm = JOptionPane.showConfirmDialog(null, 
@@ -268,6 +268,127 @@ public class MenuTaskbar extends JPanel {
     }
 }
         }
+    }
+
+    private TongQuan getTongQuanPanel() {
+        if (tongQuan == null) {
+            System.out.println("[MENU] 📊 Dang load trang: TONG QUAN...");
+            tongQuan = new TongQuan(user);
+            System.out.println("[MENU] ✅ Trang TONG QUAN tai xong");
+        } else {
+            System.out.println("[MENU] 📊 Hien thi trang TONG QUAN (cache)");
+        }
+        return tongQuan;
+    }
+
+    private SanPham getSanPhamPanel() {
+        if (sanPham == null) {
+            System.out.println("[MENU] 🛍️  Dang load trang: SAN PHAM...");
+            sanPham = new SanPham(main, nhanVienDTO);
+            System.out.println("[MENU] ✅ Trang SAN PHAM tai xong");
+        } else {
+            System.out.println("[MENU] 🛍️  Hien thi trang SAN PHAM (cache)");
+        }
+        return sanPham;
+    }
+
+    private MaKhuyenMai getMaKhuyenMaiPanel() {
+        if (maKhuyenMai == null) {
+            System.out.println("[MENU] 🏷️  Dang load trang: MA KHUYEN MAI...");
+            maKhuyenMai = new MaKhuyenMai(main, nhanVienDTO);
+            System.out.println("[MENU] ✅ Trang MA KHUYEN MAI tai xong");
+        } else {
+            System.out.println("[MENU] 🏷️  Hien thi trang MA KHUYEN MAI (cache)");
+        }
+        return maKhuyenMai;
+    }
+
+    private NhanVien getNhanVienPanel() {
+        if (nhanVien == null) {
+            System.out.println("[MENU] 👥 Dang load trang: NHAN VIEN...");
+            nhanVien = new NhanVien(main, nhanVienDTO);
+            System.out.println("[MENU] ✅ Trang NHAN VIEN tai xong");
+        } else {
+            System.out.println("[MENU] 👥 Hien thi trang NHAN VIEN (cache)");
+        }
+        return nhanVien;
+    }
+
+    private ChucVu getChucVuPanel() {
+        if (chucVu == null) {
+            System.out.println("[MENU] 📋 Dang load trang: CHUC VU...");
+            chucVu = new ChucVu(main);
+            System.out.println("[MENU] ✅ Trang CHUC VU tai xong");
+        } else {
+            System.out.println("[MENU] 📋 Hien thi trang CHUC VU (cache)");
+        }
+        return chucVu;
+    }
+
+    private KhachHang getKhachHangPanel() {
+        if (khachHang == null) {
+            System.out.println("[MENU] 🧑‍🤝‍🧑 Dang load trang: KHACH HANG...");
+            khachHang = new KhachHang(main);
+            System.out.println("[MENU] ✅ Trang KHACH HANG tai xong");
+        } else {
+            System.out.println("[MENU] 🧑‍🤝‍🧑 Hien thi trang KHACH HANG (cache)");
+        }
+        return khachHang;
+    }
+
+    private NhaCungCap getNhaCungCapPanel() {
+        if (nhacungcap == null) {
+            System.out.println("[MENU] 🏢 Dang load trang: NHA CUNG CAP...");
+            nhacungcap = new NhaCungCap(main);
+            System.out.println("[MENU] ✅ Trang NHA CUNG CAP tai xong");
+        } else {
+            System.out.println("[MENU] 🏢 Hien thi trang NHA CUNG CAP (cache)");
+        }
+        return nhacungcap;
+    }
+
+    private PhieuXuat getPhieuXuatPanel() {
+        if (phieuXuat == null) {
+            System.out.println("[MENU] 📤 Dang load trang: PHIEU XUAT...");
+            phieuXuat = new PhieuXuat(main, nhanVienDTO);
+            System.out.println("[MENU] ✅ Trang PHIEU XUAT tai xong");
+        } else {
+            System.out.println("[MENU] 📤 Hien thi trang PHIEU XUAT (cache)");
+        }
+        return phieuXuat;
+    }
+
+    private PhieuNhap getPhieuNhapPanel() {
+        if (phieuNhap == null) {
+            System.out.println("[MENU] 📥 Dang load trang: PHIEU NHAP...");
+            phieuNhap = new PhieuNhap(main, nhanVienDTO);
+            System.out.println("[MENU] ✅ Trang PHIEU NHAP tai xong");
+        } else {
+            System.out.println("[MENU] 📥 Hien thi trang PHIEU NHAP (cache)");
+        }
+        return phieuNhap;
+    }
+
+    private PhanQuyen getPhanQuyenPanel() {
+        if (phanQuyen == null) {
+            System.out.println("[MENU] 🔐 Dang load trang: PHAN QUYEN...");
+            phanQuyen = new PhanQuyen(main);
+            System.out.println("[MENU] ✅ Trang PHAN QUYEN tai xong");
+        } else {
+            System.out.println("[MENU] 🔐 Hien thi trang PHAN QUYEN (cache)");
+        }
+        return phanQuyen;
+    }
+
+    private TaiKhoan getTaiKhoanPanel() {
+        if (taiKhoan == null) {
+            System.out.println("[MENU] 🔑 Dang load trang: TAI KHOAN...");
+            taiKhoan = new TaiKhoan(main);
+            System.out.println("[MENU] ✅ Trang TAI KHOAN tai xong");
+        } else {
+            System.out.println("[MENU] 🔑 Hien thi trang TAI KHOAN (cache)");
+        }
+        return taiKhoan;
     }
 
   public boolean checkRole(String machucnang) {
