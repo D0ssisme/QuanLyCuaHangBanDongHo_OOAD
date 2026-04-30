@@ -83,6 +83,8 @@ public class MenuTaskbar extends JPanel {
 
     Main main;
     TaiKhoanDTO user;
+    String mcn;
+    int mnv;
     public ArrayList<itemTaskbar> listitem;
     ArrayList<Integer> check = new ArrayList<>();
 
@@ -109,10 +111,16 @@ public class MenuTaskbar extends JPanel {
         initComponent();
     }
 
-    public MenuTaskbar(Main main, TaiKhoanDTO tk) {
+    public MenuTaskbar(Main main, TaiKhoanDTO tk,String mcn) {
         this.main = main;
         this.user = tk;
+        this.mcn=mcn;
+        this.mnv=user.getMNV();
+    
         this.nhomQuyenDTO = NhomQuyenDAO.getInstance().selectById(Integer.toString(tk.getMNQ()));
+       
+
+        
         this.nhanVienDTO = NhanVienDAO.getInstance().selectById(Integer.toString(tk.getMNV()));
         listQuyen = ChiTietQuyenDAO.getInstance().selectAll(Integer.toString(tk.getMNQ()));
         initComponent();
@@ -238,75 +246,96 @@ public class MenuTaskbar extends JPanel {
     private void handleMenuClick(int index) {
         switch (index) {
             case 0 -> { tongQuan = new TongQuan(user); main.setPanel(tongQuan); }
-            case 1 -> { sanPham = new SanPham(main); main.setPanel(sanPham); }
+            case 1 -> { sanPham = new SanPham(main, nhanVienDTO); main.setPanel(sanPham); }
             case 2 -> { maKhuyenMai = new MaKhuyenMai(main, nhanVienDTO); main.setPanel(maKhuyenMai); }
-            case 3 -> { nhanVien = new NhanVien(main); main.setPanel(nhanVien); }
+            case 3 -> { nhanVien = new NhanVien(main,nhanVienDTO); main.setPanel(nhanVien); }
             case 4 -> { chucVu = new ChucVu(main); main.setPanel(chucVu); }
             case 5 -> { khachHang = new KhachHang(main); main.setPanel(khachHang); }
             case 6 -> { nhacungcap = new NhaCungCap(main); main.setPanel(nhacungcap); }
-            case 7 -> { phieuXuat = new PhieuXuat(main, user); main.setPanel(phieuXuat); }
+            case 7 -> { phieuXuat = new PhieuXuat(main, nhanVienDTO); main.setPanel(phieuXuat); }
             case 8 -> { phieuNhap = new PhieuNhap(main, nhanVienDTO); main.setPanel(phieuNhap); }
             case 9 -> { phanQuyen = new PhanQuyen(main); main.setPanel(phanQuyen); }
             case 10 -> { taiKhoan = new TaiKhoan(main); main.setPanel(taiKhoan); }
-            case 11 -> { thongKe = new ThongKe(); main.setPanel(thongKe); }
+         
             case 12 -> {
-                int confirm = JOptionPane.showConfirmDialog(null, 
-                    "Bạn muốn đăng xuất?", "Đăng xuất", 
-                    JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE);
-                if (confirm == JOptionPane.OK_OPTION) {
-                    main.dispose();
-                    new login_page().setVisible(true);
-                }
-            }
+    int confirm = JOptionPane.showConfirmDialog(null, 
+        "Bạn muốn đăng xuất?", "Đăng xuất", 
+        JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE);
+
+    if (confirm == JOptionPane.OK_OPTION) {
+        main.dispose();
+        new login_page().setVisible(true);
+    }
+}
         }
     }
 
-    public boolean checkRole(String machucnang) {
-        if (listQuyen == null) return true;
-        return listQuyen.stream()
-                .anyMatch(q -> "view".equals(q.getHanhdong()) && machucnang.equals(q.getMachucnang()));
-    }
-
-    public void resetChange() {
-        this.nhanVienDTO = new NhanVienDAO().selectById(String.valueOf(nhanVienDTO.getMNV()));
-        lblUsername.setText(nhanVienDTO.getHOTEN());
-    }
-
-    public void in4(JPanel info) {
-        JPanel pnlIcon = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        pnlIcon.setPreferredSize(new Dimension(70, 80));
-        pnlIcon.setOpaque(false);
-        info.add(pnlIcon, BorderLayout.WEST);
-
-        JLabel lblIcon = new JLabel();
-        lblIcon.setPreferredSize(new Dimension(50, 50));
-        FlatSVGIcon icon = new FlatSVGIcon(nhanVienDTO.getGIOITINH() == 1 ? 
-                "./icon/man_50px.svg" : "./icon/women_50px.svg");
-        icon.setColorFilter(new com.formdev.flatlaf.extras.FlatSVGIcon.ColorFilter(color -> new Color(31, 41, 59)));
-        lblIcon.setIcon(icon.derive(50, 50));
-        pnlIcon.add(lblIcon);
-
-        JPanel pnlInfo = new JPanel();
-        pnlInfo.setOpaque(false);
-        pnlInfo.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 4));
-        info.add(pnlInfo, BorderLayout.CENTER);
-
-        lblUsername = new JLabel(nhanVienDTO.getHOTEN());
-        lblUsername.putClientProperty("FlatLaf.style", "font: 150% $semibold.font");
-        lblUsername.setForeground(new Color(31, 41, 59));
-        pnlInfo.add(lblUsername);
-
-        lblTenNhomQuyen = new JLabel(nhomQuyenDTO.getTennhomquyen());
-        lblTenNhomQuyen.putClientProperty("FlatLaf.style", "font: 110% $light.font");
-        lblTenNhomQuyen.setForeground(new Color(107, 114, 128));
-        pnlInfo.add(lblTenNhomQuyen);
-
-        lblIcon.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent evt) {
-                new MyAccount(owner, MenuTaskbar.this, "Thông tin tài khoản", true);
-            }
-        });
-    }
+  public boolean checkRole(String machucnang) {
+    return true;
 }
+
+
+  public void in4(JPanel info) {
+    // DEBUG
+    System.out.println("DEBUG MCN = " + mcn);
+
+    JPanel pnlIcon = new JPanel(new FlowLayout(FlowLayout.CENTER));
+    pnlIcon.setPreferredSize(new Dimension(70, 80));
+    pnlIcon.setOpaque(false);
+    info.add(pnlIcon, BorderLayout.WEST);
+
+    JLabel lblIcon = new JLabel();
+    lblIcon.setPreferredSize(new Dimension(50, 50));
+
+    FlatSVGIcon icon = new FlatSVGIcon(
+        nhanVienDTO.getGIOITINH() == 1 ? "./icon/man_50px.svg" : "./icon/women_50px.svg"
+    );
+    icon.setColorFilter(new com.formdev.flatlaf.extras.FlatSVGIcon.ColorFilter(
+        color -> new Color(31, 41, 59)
+    ));
+    lblIcon.setIcon(icon.derive(50, 50));
+    pnlIcon.add(lblIcon);
+
+    // 👉 ĐỔI SANG LAYOUT DỌC
+    JPanel pnlInfo = new JPanel();
+    pnlInfo.setOpaque(false);
+    pnlInfo.setLayout(new javax.swing.BoxLayout(pnlInfo, javax.swing.BoxLayout.Y_AXIS));
+    info.add(pnlInfo, BorderLayout.CENTER);
+
+    // 👉 Tên
+    lblUsername = new JLabel(nhanVienDTO.getHOTEN());
+    lblUsername.putClientProperty("FlatLaf.style", "font: 150% $semibold.font");
+    lblUsername.setForeground(new Color(31, 41, 59));
+    pnlInfo.add(lblUsername);
+
+    // 👉 Nhóm quyền
+    lblTenNhomQuyen = new JLabel(nhomQuyenDTO.getTennhomquyen());
+    lblTenNhomQuyen.putClientProperty("FlatLaf.style", "font: 110% $light.font");
+    lblTenNhomQuyen.setForeground(new Color(107, 114, 128));
+    pnlInfo.add(lblTenNhomQuyen);
+
+    // 👉 MÃ CHI NHÁNH (dòng mới)
+    JLabel lblMCN = new JLabel("Chi nhánh: " + (mcn != null ? mcn : "NULL"));
+    lblMCN.setForeground(Color.GRAY);
+    pnlInfo.add(lblMCN);
+
+    // Click avatar
+    lblIcon.addMouseListener(new MouseAdapter() {
+        @Override
+        public void mousePressed(MouseEvent evt) {
+            new MyAccount(owner, MenuTaskbar.this, "Thông tin tài khoản", true);
+        }
+    });
+}
+    
+    
+    
+    public void refreshUI() {
+    this.removeAll();
+    initComponent();
+    this.revalidate();
+    this.repaint();
+}
+}
+
 // </DOCUMENT>

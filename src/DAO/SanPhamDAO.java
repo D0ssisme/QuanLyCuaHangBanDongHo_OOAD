@@ -22,7 +22,7 @@ public class SanPhamDAO implements DAOinterface<SanPhamDTO> {
         int result = 0;
         try {
             Connection con = (Connection) JDBCUtil.getConnection();
-            String sql = "INSERT INTO SANPHAM (TEN, HINHANH, MNCC, MVT, THUONGHIEU, NAMSANXUAT, GIANHAP, GIABAN, SOLUONG, THOIGIANBAOHANH, TT) VALUES (?,?,?,?,?,?,?,?,?,?,1)";
+            String sql = "INSERT INTO SANPHAM (TEN, HINHANH, MNCC, MVT, THUONGHIEU, NAMSANXUAT, GIANHAP, GIABAN, THOIGIANBAOHANH, TT) VALUES (?,?,?,?,?,?,?,?,?,1)";
             PreparedStatement pst = (PreparedStatement) con.prepareStatement(sql);
             pst.setString(1, t.getTEN());
             pst.setString(2, t.getHINHANH());
@@ -40,8 +40,7 @@ public class SanPhamDAO implements DAOinterface<SanPhamDTO> {
             }
             pst.setDouble(7, t.getGIANHAP());
             pst.setDouble(8, t.getGIABAN());
-            pst.setInt(9, t.getSOLUONG());
-            pst.setInt(10, t.getTHOIGIANBAOHANH());
+            pst.setInt(9, t.getTHOIGIANBAOHANH());
             result = pst.executeUpdate();
             JDBCUtil.closeConnection(con);
         } catch (SQLException ex) {
@@ -55,7 +54,7 @@ public class SanPhamDAO implements DAOinterface<SanPhamDTO> {
         int result = 0;
         try {
             Connection con = (Connection) JDBCUtil.getConnection();
-            String sql = "UPDATE SANPHAM SET TEN = ?, HINHANH = ?, MNCC = ?, MVT = ?, THUONGHIEU = ?, NAMSANXUAT = ?, GIANHAP = ?, GIABAN = ?, SOLUONG = ?, THOIGIANBAOHANH = ? WHERE MSP=?";
+            String sql = "UPDATE SANPHAM SET TEN = ?, HINHANH = ?, MNCC = ?, MVT = ?, THUONGHIEU = ?, NAMSANXUAT = ?, GIANHAP = ?, GIABAN = ?, THOIGIANBAOHANH = ? WHERE MSP=?";
             PreparedStatement pst = (PreparedStatement) con.prepareStatement(sql);
             pst.setString(1, t.getTEN());
             pst.setString(2, t.getHINHANH());
@@ -73,9 +72,8 @@ public class SanPhamDAO implements DAOinterface<SanPhamDTO> {
             }
             pst.setDouble(7, t.getGIANHAP());
             pst.setDouble(8, t.getGIABAN());
-            pst.setInt(9, t.getSOLUONG());
-            pst.setInt(10, t.getTHOIGIANBAOHANH());
-            pst.setInt(11, t.getMSP());
+            pst.setInt(9, t.getTHOIGIANBAOHANH());
+            pst.setInt(10, t.getMSP());
 
             result = pst.executeUpdate();
             JDBCUtil.closeConnection(con);
@@ -103,30 +101,63 @@ public class SanPhamDAO implements DAOinterface<SanPhamDTO> {
 
     @Override
     public ArrayList<SanPhamDTO> selectAll() {
+        // Gọi selectAll với MCN mặc định là null để lấy tất cả (không lọc chi nhánh)
+        return selectAllByMCN(null);
+    }
+
+    /**
+     * Load sản phẩm có tồn kho ở chi nhánh cụ thể
+     * @param mcn Mã chi nhánh. Nếu null, lấy tất cả sản phẩm
+     * @return Danh sách sản phẩm với số lượng tồn kho
+     */
+    public ArrayList<SanPhamDTO> selectAllByMCN(String mcn) {
         ArrayList<SanPhamDTO> result = new ArrayList<SanPhamDTO>();
         try {
             Connection con = (Connection) JDBCUtil.getConnection();
-            String sql = "SELECT * FROM SANPHAM WHERE TT= 1";
-            PreparedStatement pst = (PreparedStatement) con.prepareStatement(sql);
+            String sql;
+            PreparedStatement pst;
+            
+            if (mcn != null && !mcn.isEmpty()) {
+                // Load tất cả sản phẩm, nhưng chỉ lấy số lượng từ kho của chi nhánh
+                sql = "SELECT sp.MSP, sp.TEN, sp.HINHANH, sp.MNCC, sp.THUONGHIEU, sp.NAMSANXUAT, " +
+                      "sp.GIANHAP, sp.GIABAN, sp.THOIGIANBAOHANH, COALESCE(tk.SOLUONG, 0) as SOLUONG " +
+                      "FROM SANPHAM sp " +
+                      "LEFT JOIN TONKHO tk ON sp.MSP = tk.MSP AND tk.MKHO IN (SELECT MKHO FROM KHO WHERE MCN = ?) " +
+                      "WHERE sp.TT = 1";
+                pst = (PreparedStatement) con.prepareStatement(sql);
+                pst.setString(1, mcn);
+            } else {
+                // Nếu không có MCN, lấy tất cả sản phẩm với tổng số lượng từ tất cả kho
+                sql = "SELECT sp.MSP, sp.TEN, sp.HINHANH, sp.MNCC, sp.THUONGHIEU, sp.NAMSANXUAT, " +
+                      "sp.GIANHAP, sp.GIABAN, sp.THOIGIANBAOHANH, COALESCE(SUM(tk.SOLUONG), 0) as SOLUONG " +
+                      "FROM SANPHAM sp " +
+                      "LEFT JOIN TONKHO tk ON sp.MSP = tk.MSP " +
+                      "WHERE sp.TT = 1 " +
+                      "GROUP BY sp.MSP, sp.TEN, sp.HINHANH, sp.MNCC, sp.THUONGHIEU, sp.NAMSANXUAT, " +
+                      "sp.GIANHAP, sp.GIABAN, sp.THOIGIANBAOHANH";
+                pst = (PreparedStatement) con.prepareStatement(sql);
+            }
+            
             ResultSet rs = (ResultSet) pst.executeQuery();
             while (rs.next()) {
                 int msp = rs.getInt("MSP");
                 String ten = rs.getString("TEN");
                 String hinhanh = rs.getString("HINHANH");
                 int mncc = rs.getInt("MNCC");
-                Integer mvt = rs.getObject("MVT") != null ? rs.getInt("MVT") : null;
                 String thuonghieu = rs.getString("THUONGHIEU");
                 Integer namsanxuat = rs.getObject("NAMSANXUAT") != null ? rs.getInt("NAMSANXUAT") : null;
                 double gianhap = rs.getDouble("GIANHAP");
                 double giaban = rs.getDouble("GIABAN");
-                int soluong = rs.getInt("SOLUONG");
                 int thoigianbaohanh = rs.getInt("THOIGIANBAOHANH");
-                SanPhamDTO sp = new SanPhamDTO(msp, ten, hinhanh, mncc, mvt, thuonghieu, 
-                    namsanxuat, gianhap, giaban, soluong, thoigianbaohanh);
+                int soluong = rs.getInt("SOLUONG");
+                SanPhamDTO sp = new SanPhamDTO(msp, ten, hinhanh, mncc, null, thuonghieu, 
+                    namsanxuat, gianhap, giaban, thoigianbaohanh, soluong);
                 result.add(sp);
             }
             JDBCUtil.closeConnection(con);
         } catch (Exception e) {
+            Logger.getLogger(SanPhamDAO.class.getName()).log(Level.SEVERE, "Lỗi load danh sách sản phẩm", e);
+            e.printStackTrace();
         }
         return result;
     }
@@ -136,7 +167,7 @@ public class SanPhamDAO implements DAOinterface<SanPhamDTO> {
         SanPhamDTO result = null;
         try {
             Connection con = (Connection) JDBCUtil.getConnection();
-            String sql = "SELECT * FROM SANPHAM WHERE MSP=?";
+            String sql = "SELECT MSP, TEN, HINHANH, MNCC, THUONGHIEU, NAMSANXUAT, GIANHAP, GIABAN, THOIGIANBAOHANH FROM SANPHAM WHERE MSP=?";
             PreparedStatement pst = (PreparedStatement) con.prepareStatement(sql);
             pst.setString(1, t);
             ResultSet rs = (ResultSet) pst.executeQuery();
@@ -145,18 +176,17 @@ public class SanPhamDAO implements DAOinterface<SanPhamDTO> {
                 String ten = rs.getString("TEN");
                 String hinhanh = rs.getString("HINHANH");
                 int mncc = rs.getInt("MNCC");
-                Integer mvt = rs.getObject("MVT") != null ? rs.getInt("MVT") : null;
                 String thuonghieu = rs.getString("THUONGHIEU");
                 Integer namsanxuat = rs.getObject("NAMSANXUAT") != null ? rs.getInt("NAMSANXUAT") : null;
                 double gianhap = rs.getDouble("GIANHAP");
                 double giaban = rs.getDouble("GIABAN");
-                int soluong = rs.getInt("SOLUONG");
                 int thoigianbaohanh = rs.getInt("THOIGIANBAOHANH");
-                result = new SanPhamDTO(msp, ten, hinhanh, mncc, mvt, thuonghieu, 
-                    namsanxuat, gianhap, giaban, soluong, thoigianbaohanh);
+                result = new SanPhamDTO(msp, ten, hinhanh, mncc, null, thuonghieu, 
+                    namsanxuat, gianhap, giaban, thoigianbaohanh);
             }
             JDBCUtil.closeConnection(con);
         } catch (SQLException e) {
+            Logger.getLogger(SanPhamDAO.class.getName()).log(Level.SEVERE, "Lỗi tìm sản phẩm theo ID", e);
         }
         return result;
     }
@@ -168,9 +198,9 @@ public class SanPhamDAO implements DAOinterface<SanPhamDTO> {
         int result = -1;
         try {
             Connection con = (Connection) JDBCUtil.getConnection();
-            String sql = "SELECT AUTO_INCREMENT FROM  INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'QuanLyCuaHangDongHo' AND   TABLE_NAME   = 'SANPHAM'";
+            String sql = "SELECT CAST(IDENT_CURRENT('SANPHAM') AS INT) AS AUTO_INCREMENT";
             PreparedStatement pst = (PreparedStatement) con.prepareStatement(sql);
-            ResultSet rs2 = pst.executeQuery(sql);
+            ResultSet rs2 = pst.executeQuery();
             if (!rs2.isBeforeFirst()) {
                 System.out.println("No data");
             } else {
@@ -185,48 +215,7 @@ public class SanPhamDAO implements DAOinterface<SanPhamDTO> {
         return result;
     }
 
-    public int updateSoLuongTon(int MSP, int soluong) {
-        int quantity_current = this.selectById(Integer.toString(MSP)).getSL();
-        int result = 0;
-        int quantity_change = quantity_current + soluong;
-        try {
-            Connection con = (Connection) JDBCUtil.getConnection();
-            String sql = "UPDATE SANPHAM SET SOLUONG=? WHERE MSP = ?";
-            PreparedStatement pst = (PreparedStatement) con.prepareStatement(sql);
-            pst.setInt(1, quantity_change);
-            pst.setInt(2, MSP);
-            result = pst.executeUpdate();
-            JDBCUtil.closeConnection(con);
-        } catch (SQLException ex) {
-            Logger.getLogger(SanPhamDAO.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return result;
-    }
 
-    public int updateSoLuongTon(int MSP, int soluong, int tiennhap) {
-        SanPhamDTO tmp = this.selectById(Integer.toString(MSP));
-        if (tmp.getTIENX() < tiennhap * (120 / 100)) {
-            tiennhap = tiennhap * (120 / 100);
-        } else {
-            tiennhap = tmp.getTIENX();
-        }
-        int quantity_current = tmp.getSL();
-        int result = 0;
-        int quantity_change = quantity_current + soluong;
-        try {
-            Connection con = (Connection) JDBCUtil.getConnection();
-            String sql = "UPDATE SANPHAM SET SOLUONG=?, GIABAN = ? WHERE MSP = ?";
-            PreparedStatement pst = (PreparedStatement) con.prepareStatement(sql);
-            pst.setInt(1, quantity_change);
-            pst.setInt(2, tiennhap);
-            pst.setInt(3, MSP);
-            result = pst.executeUpdate();
-            JDBCUtil.closeConnection(con);
-        } catch (SQLException ex) {
-            Logger.getLogger(SanPhamDAO.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return result;
-    }
 
     public int updateGia(int MSP, int giaxuat) {
         int result = 0;
@@ -267,24 +256,21 @@ public class SanPhamDAO implements DAOinterface<SanPhamDTO> {
         ArrayList<SanPhamDTO> result = new ArrayList<>();
         try {
             Connection con = JDBCUtil.getConnection();
-            String sql = "SELECT * FROM SANPHAM WHERE MVT = ? AND TT = 1";
+            String sql = "SELECT MSP, TEN, HINHANH, MNCC, THUONGHIEU, NAMSANXUAT, GIANHAP, GIABAN, THOIGIANBAOHANH FROM SANPHAM WHERE TT = 1";
             PreparedStatement pst = con.prepareStatement(sql);
-            pst.setInt(1, maViTri);
             ResultSet rs = pst.executeQuery();
             while (rs.next()) {
                 int msp = rs.getInt("MSP");
                 String ten = rs.getString("TEN");
                 String hinhanh = rs.getString("HINHANH");
                 int mncc = rs.getInt("MNCC");
-                Integer mvt = rs.getObject("MVT") != null ? rs.getInt("MVT") : null;
                 String thuonghieu = rs.getString("THUONGHIEU");
                 Integer namsanxuat = rs.getObject("NAMSANXUAT") != null ? rs.getInt("NAMSANXUAT") : null;
                 double gianhap = rs.getDouble("GIANHAP");
                 double giaban = rs.getDouble("GIABAN");
-                int soluong = rs.getInt("SOLUONG");
                 int thoigianbaohanh = rs.getInt("THOIGIANBAOHANH");
-                SanPhamDTO sp = new SanPhamDTO(msp, ten, hinhanh, mncc, mvt, thuonghieu, 
-                    namsanxuat, gianhap, giaban, soluong, thoigianbaohanh);
+                SanPhamDTO sp = new SanPhamDTO(msp, ten, hinhanh, mncc, null, thuonghieu, 
+                    namsanxuat, gianhap, giaban, thoigianbaohanh);
                 result.add(sp);
             }
             JDBCUtil.closeConnection(con);
@@ -298,24 +284,21 @@ public class SanPhamDAO implements DAOinterface<SanPhamDTO> {
         ArrayList<SanPhamDTO> result = new ArrayList<>();
         try {
             Connection con = JDBCUtil.getConnection();
-            String sql = "SELECT * FROM SANPHAM WHERE ML = ?";
+            String sql = "SELECT MSP, TEN, HINHANH, MNCC, THUONGHIEU, NAMSANXUAT, GIANHAP, GIABAN, THOIGIANBAOHANH FROM SANPHAM WHERE TT = 1";
             PreparedStatement pst = con.prepareStatement(sql);
-            pst.setInt(1, maLoai);
             ResultSet rs = pst.executeQuery();
             while (rs.next()) {
                 int msp = rs.getInt("MSP");
                 String ten = rs.getString("TEN");
                 String hinhanh = rs.getString("HINHANH");
                 int mncc = rs.getInt("MNCC");
-                Integer mvt = rs.getObject("MVT") != null ? rs.getInt("MVT") : null;
                 String thuonghieu = rs.getString("THUONGHIEU");
                 Integer namsanxuat = rs.getObject("NAMSANXUAT") != null ? rs.getInt("NAMSANXUAT") : null;
                 double gianhap = rs.getDouble("GIANHAP");
                 double giaban = rs.getDouble("GIABAN");
-                int soluong = rs.getInt("SOLUONG");
                 int thoigianbaohanh = rs.getInt("THOIGIANBAOHANH");
-                SanPhamDTO sp = new SanPhamDTO(msp, ten, hinhanh, mncc, mvt, thuonghieu, 
-                    namsanxuat, gianhap, giaban, soluong, thoigianbaohanh);
+                SanPhamDTO sp = new SanPhamDTO(msp, ten, hinhanh, mncc, null, thuonghieu, 
+                    namsanxuat, gianhap, giaban, thoigianbaohanh);
                 result.add(sp);
             }
             JDBCUtil.closeConnection(con);
@@ -329,24 +312,21 @@ public class SanPhamDAO implements DAOinterface<SanPhamDTO> {
         ArrayList<SanPhamDTO> result = new ArrayList<>();
         try {
             Connection con = JDBCUtil.getConnection();
-            String sql = "SELECT * FROM SANPHAM WHERE MDV = ?";
+            String sql = "SELECT MSP, TEN, HINHANH, MNCC, THUONGHIEU, NAMSANXUAT, GIANHAP, GIABAN, THOIGIANBAOHANH FROM SANPHAM WHERE TT = 1";
             PreparedStatement pst = con.prepareStatement(sql);
-            pst.setInt(1, maDonVi);
             ResultSet rs = pst.executeQuery();
             while (rs.next()) {
                 int msp = rs.getInt("MSP");
                 String ten = rs.getString("TEN");
                 String hinhanh = rs.getString("HINHANH");
                 int mncc = rs.getInt("MNCC");
-                Integer mvt = rs.getObject("MVT") != null ? rs.getInt("MVT") : null;
                 String thuonghieu = rs.getString("THUONGHIEU");
                 Integer namsanxuat = rs.getObject("NAMSANXUAT") != null ? rs.getInt("NAMSANXUAT") : null;
                 double gianhap = rs.getDouble("GIANHAP");
                 double giaban = rs.getDouble("GIABAN");
-                int soluong = rs.getInt("SOLUONG");
                 int thoigianbaohanh = rs.getInt("THOIGIANBAOHANH");
-                SanPhamDTO sp = new SanPhamDTO(msp, ten, hinhanh, mncc, mvt, thuonghieu, 
-                    namsanxuat, gianhap, giaban, soluong, thoigianbaohanh);
+                SanPhamDTO sp = new SanPhamDTO(msp, ten, hinhanh, mncc, null, thuonghieu, 
+                    namsanxuat, gianhap, giaban, thoigianbaohanh);
                 result.add(sp);
             }
             JDBCUtil.closeConnection(con);

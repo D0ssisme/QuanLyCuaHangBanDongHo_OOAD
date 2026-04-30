@@ -21,6 +21,15 @@ public class SanPhamBUS {
         return this.listSP;
     }
 
+    /**
+     * Lấy danh sách sản phẩm có tồn kho ở chi nhánh cụ thể
+     * @param mcn Mã chi nhánh
+     * @return Danh sách sản phẩm
+     */
+    public ArrayList<SanPhamDTO> getAll(String mcn) {
+        return spDAO.selectAllByMCN(mcn);
+    }
+
     public SanPhamDTO getByIndex(int index) {
         return this.listSP.get(index);
     }

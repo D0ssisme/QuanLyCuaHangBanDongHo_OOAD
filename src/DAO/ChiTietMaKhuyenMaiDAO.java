@@ -160,9 +160,9 @@ public class ChiTietMaKhuyenMaiDAO implements DAOinterface<ChiTietMaKhuyenMaiDTO
         int result = -1;
         try {
             Connection con = (Connection) JDBCUtil.getConnection();
-            String sql = "SELECT AUTO_INCREMENT FROM  INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'QuanLyCuaHangDongHo' AND   TABLE_NAME   = 'CTMAKHUYENMAI'";
+            String sql = "SELECT CAST(IDENT_CURRENT('CTMAKHUYENMAI') AS INT) AS AUTO_INCREMENT";
             PreparedStatement pst = (PreparedStatement) con.prepareStatement(sql);
-            ResultSet rs2 = pst.executeQuery(sql);
+            ResultSet rs2 = pst.executeQuery();
             if (!rs2.isBeforeFirst()) {
                 System.out.println("No data");
             } else {
