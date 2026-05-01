@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -27,7 +28,7 @@ public class PhieuNhapDAO implements DAOinterface<PhieuNhapDTO> {
         try {
             Connection con = (Connection) JDBCUtil.getConnection();
             String sql = "INSERT INTO PHIEUNHAP (MNV, MNCC, TIEN, TG, TT, MCN) VALUES (?,?,?,?,?,?)";
-            PreparedStatement pst = con.prepareStatement(sql);
+            PreparedStatement pst = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             pst.setInt(1, t.getMNV());
             pst.setInt(2, t.getMNCC());
             pst.setDouble(3, t.getTIEN());
@@ -35,6 +36,12 @@ public class PhieuNhapDAO implements DAOinterface<PhieuNhapDTO> {
             pst.setInt(5, t.getTT());
             pst.setString(6, t.getMCN());
             result = pst.executeUpdate();
+            try (ResultSet keys = pst.getGeneratedKeys()) {
+                if (keys.next()) {
+                    int generated = keys.getInt(1);
+                    t.setMP(generated);
+                }
+            }
             JDBCUtil.closeConnection(con);
         } catch (SQLException ex) {
             Logger.getLogger(PhieuNhapDAO.class.getName()).log(Level.SEVERE, null, ex);

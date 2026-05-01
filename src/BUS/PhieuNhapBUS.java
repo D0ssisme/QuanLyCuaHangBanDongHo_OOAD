@@ -82,6 +82,11 @@ public class PhieuNhapBUS {
     public boolean add(PhieuNhapDTO phieu, ArrayList<ChiTietPhieuNhapDTO> ctPhieu, HashMap<Integer, ArrayList<SanPhamDTO>> chitietsanpham) {
         boolean check = phieunhapDAO.insert(phieu) != 0;
         if (check) {
+            // ensure child detail records reference the newly generated parent MPN
+            int parentMPN = phieu.getMP();
+            for (ChiTietPhieuNhapDTO ct : ctPhieu) {
+                ct.setMP(parentMPN);
+            }
             check = ctPhieuNhapDAO.insertWithMCN(ctPhieu, phieu.getMCN()) != 0;
         }
         return check;

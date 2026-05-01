@@ -1,7 +1,8 @@
 package config;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.HashMap;
@@ -14,6 +15,13 @@ public class JDBCUtil {
     private static final String DEFAULT_URL = buildSqlServerUrl("DESKTOP-0G7OJFQ\\MANHDUNG1", "quanlycuahangdongho");
     private static volatile String currentMcn;
 
+    // One Hikari pool per branch/key
+    private static final Map<String, HikariDataSource> POOLS = new HashMap<>();
+
+    // credentials (keep as-is for now)
+    private static final String DB_USER = "sa";
+    private static final String DB_PASS = "cc123123";
+
     static {
         JDBC_URL_BY_MCN.put("CN1", buildSqlServerUrl("DESKTOP-0G7OJFQ\\MANHDUNG2", "quanlycuahangdongho"));
         JDBC_URL_BY_MCN.put("CN2", buildSqlServerUrl("DESKTOP-0G7OJFQ\\MANHDUNG3", "quanlycuahangdongho"));
@@ -24,7 +32,20 @@ public class JDBCUtil {
         if (mcn == null || mcn.isBlank() || jdbcUrl == null || jdbcUrl.isBlank()) {
             return;
         }
-        JDBC_URL_BY_MCN.put(mcn.trim().toUpperCase(), jdbcUrl.trim());
+        String key = mcn.trim().toUpperCase();
+        String url = jdbcUrl.trim();
+        synchronized (JDBC_URL_BY_MCN) {
+            JDBC_URL_BY_MCN.put(key, url);
+            // If a pool already exists for this key, close and remove it so it can be recreated lazily
+            HikariDataSource ds = POOLS.remove(key);
+            if (ds != null) {
+                try {
+                    ds.close();
+                } catch (Exception ex) {
+                    System.out.println("[DB] WARN | failed to close existing pool for " + key + " | " + ex.getMessage());
+                }
+            }
+        }
     }
 
     public static void setCurrentMcn(String mcn) {
@@ -42,33 +63,58 @@ public class JDBCUtil {
         String url = key != null && JDBC_URL_BY_MCN.containsKey(key)
                 ? JDBC_URL_BY_MCN.get(key)
                 : DEFAULT_URL;
-        return openConnection(url, key);
+        return getConnectionFromPool(url, key);
     }
 
     public static Connection getConnection() {
         if (currentMcn != null && JDBC_URL_BY_MCN.containsKey(currentMcn)) {
-            return openConnection(JDBC_URL_BY_MCN.get(currentMcn), currentMcn);
+            return getConnectionFromPool(JDBC_URL_BY_MCN.get(currentMcn), currentMcn);
         }
-        return openConnection(DEFAULT_URL, currentMcn);
+        return getConnectionFromPool(DEFAULT_URL, currentMcn);
     }
 
-    private static Connection openConnection(String url, String branch) {
-        Connection result = null;
+    private static Connection getConnectionFromPool(String url, String branch) {
         try {
-            DriverManager.registerDriver(new com.microsoft.sqlserver.jdbc.SQLServerDriver());
-            String userName = "sa";
-            String password = "cc123123";
-            result = DriverManager.getConnection(url, userName, password);
+            String key = branch != null && !branch.isBlank() ? branch : "DEFAULT";
+            HikariDataSource ds = getOrCreatePool(key, url);
+            Connection conn = ds.getConnection();
             String serverInfo = extractServerInfo(url);
             String dbInfo = extractDatabaseName(url);
-            String branchInfo = branch != null && !branch.isBlank() ? branch : "DEFAULT";
-            System.out.println("[DB] OPEN | branch=" + branchInfo + " | server=" + serverInfo + " | db=" + dbInfo + " | thread=" + Thread.currentThread().getName());
-            logConnectedServer(result);
+            String branchInfo = key;
+            System.out.println("[DB] OPEN (pool) | branch=" + branchInfo + " | server=" + serverInfo + " | db=" + dbInfo + " | thread=" + Thread.currentThread().getName());
+            logConnectedServer(conn);
+            return conn;
         } catch (Exception e) {
             System.out.println("[DB] ERROR | branch=" + (branch != null ? branch : "DEFAULT") + " | " + e.getMessage());
             JOptionPane.showMessageDialog(null, "Không thể kết nối đến cơ sở dữ liệu !", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return null;
         }
-        return result;
+    }
+
+    private static HikariDataSource getOrCreatePool(String key, String url) {
+        synchronized (POOLS) {
+            if (POOLS.containsKey(key)) {
+                HikariDataSource existing = POOLS.get(key);
+                if (existing != null && !existing.isClosed()) {
+                    return existing;
+                }
+            }
+            HikariConfig cfg = new HikariConfig();
+            cfg.setJdbcUrl(url);
+            // Ensure driver class is set so Hikari can load the driver (requires driver jar on classpath)
+            cfg.setDriverClassName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+            cfg.setUsername(DB_USER);
+            cfg.setPassword(DB_PASS);
+            cfg.setMaximumPoolSize(40);
+            cfg.setMinimumIdle(2);
+            cfg.setConnectionTimeout(30000);
+            cfg.setIdleTimeout(600000);
+            cfg.setMaxLifetime(1800000);
+            cfg.setPoolName("HikariPool-" + key);
+            HikariDataSource ds = new HikariDataSource(cfg);
+            POOLS.put(key, ds);
+            return ds;
+        }
     }
 
     private static void logConnectedServer(Connection connection) {
@@ -120,6 +166,23 @@ public class JDBCUtil {
         } catch (Exception e) {
             System.out.println("[DB] WARN | close failed | " + e.getMessage());
             e.printStackTrace();
+        }
+    }
+
+    public static void shutdownPools() {
+        synchronized (POOLS) {
+            for (Map.Entry<String, HikariDataSource> e : POOLS.entrySet()) {
+                try {
+                    HikariDataSource ds = e.getValue();
+                    if (ds != null && !ds.isClosed()) {
+                        ds.close();
+                        System.out.println("[DB] POOL CLOSED | " + e.getKey());
+                    }
+                } catch (Exception ex) {
+                    System.out.println("[DB] WARN | failed to close pool " + e.getKey() + " | " + ex.getMessage());
+                }
+            }
+            POOLS.clear();
         }
     }
 }
