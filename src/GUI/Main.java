@@ -51,7 +51,7 @@ public class Main extends JFrame {
         this.add(MainContent, BorderLayout.CENTER);
         this.setVisible(true);
 
-        tongQuan = new TongQuan(user);
+        tongQuan = new TongQuan(user, mcn);
         MainContent.add(tongQuan).setVisible(true);
     }
 

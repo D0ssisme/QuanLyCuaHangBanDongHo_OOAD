@@ -49,6 +49,7 @@ import helper.Formater;
 public class TongQuan extends JPanel {
 
     private TaiKhoanDTO currentUser;
+    private String mcn;
 
     // Colors
     // private Color MainColor = new Color(255, 255, 255);
@@ -68,11 +69,16 @@ public class TongQuan extends JPanel {
     private MaKhuyenMaiBUS maKhuyenMaiBUS;
 
     public TongQuan() {
-        this(null);
+        this(null, null);
     }
 
     public TongQuan(TaiKhoanDTO user) {
+        this(user, null);
+    }
+
+    public TongQuan(TaiKhoanDTO user, String mcn) {
         this.currentUser = user;
+        this.mcn = mcn;
         initBUS();
         initComponent();
         FlatIntelliJLaf.registerCustomDefaultsSource("style");
@@ -291,7 +297,7 @@ public class TongQuan extends JPanel {
                 "revenue.png", SuccessColor));
         panel.add(createStatCard("Tổng đơn hàng", String.valueOf(hoaDonBUS.getAll().size()),
                 "order.png", PrimaryColor));
-        panel.add(createStatCard("Sản phẩm trong kho", String.valueOf(sanPhamBUS.getAll().size()),
+        panel.add(createStatCard("Sản phẩm trong kho", String.valueOf(sanPhamBUS.getAll(mcn).size()),
                 "checklist.png", WarningColor));
         panel.add(createStatCard("Khách hàng", String.valueOf(khachHangBUS.getAll().size()),
                 "costumer.png", DangerColor));
@@ -868,7 +874,7 @@ public class TongQuan extends JPanel {
         panel.setBackground(BackgroundColor);
 
         int lowStock = 0, outStock = 0;
-        for (SanPhamDTO sp : sanPhamBUS.getAll()) {
+        for (SanPhamDTO sp : sanPhamBUS.getAll(mcn)) {
             int sl = sp.getSL();
             if (sl == 0)
                 outStock++;
@@ -953,9 +959,9 @@ public class TongQuan extends JPanel {
         JPanel statusGrid = new JPanel(new GridLayout(4, 1, 0, 15));
         statusGrid.setBackground(CardColor);
 
-        int totalSP = sanPhamBUS.getAll().size();
+        int totalSP = sanPhamBUS.getAll(mcn).size();
         int lowStock = 0, outStock = 0;
-        for (SanPhamDTO sp : sanPhamBUS.getAll()) {
+        for (SanPhamDTO sp : sanPhamBUS.getAll(mcn)) {
             int sl = sp.getSL();
             if (sl == 0)
                 outStock++;

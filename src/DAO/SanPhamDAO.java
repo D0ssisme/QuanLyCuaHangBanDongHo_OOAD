@@ -103,8 +103,8 @@ public int update(SanPhamDTO t) {
       }
     @Override
     public ArrayList<SanPhamDTO> selectAll() {
-        // Gọi selectAll với MCN mặc định là null để lấy tất cả (không lọc chi nhánh)
-        return selectAllByMCN(null);
+        // Luôn ưu tiên MCN đang đăng nhập để không rơi về server trung tâm mặc định.
+        return selectAllByMCN(JDBCUtil.getCurrentMcn());
     }
 
     /**
@@ -113,49 +113,49 @@ public int update(SanPhamDTO t) {
      * @return Danh sách sản phẩm với số lượng tồn kho
      */
 
-    public ArrayList<SanPhamDTO> selectAllByMCN(String mcn) {
-        ArrayList<SanPhamDTO> result = new ArrayList<>();
+        public ArrayList<SanPhamDTO> selectAllByMCN(String mcn) {
+            ArrayList<SanPhamDTO> result = new ArrayList<>();
 
-        try (Connection con = JDBCUtil.getConnection(mcn)) {
+            try (Connection con = JDBCUtil.getConnection(mcn)) {
 
-            String sql = "{CALL GetAllSanPham}";
-            CallableStatement cs = con.prepareCall(sql);
+                String sql = "{CALL GetAllSanPham}";
+                CallableStatement cs = con.prepareCall(sql);
 
-            ResultSet rs = cs.executeQuery();
+                ResultSet rs = cs.executeQuery();
 
-            while (rs.next()) {
-                int msp = rs.getInt("MSP");
-                String ten = rs.getString("TEN");
-                String hinhanh = rs.getString("HINHANH");
-                int mncc = rs.getInt("MNCC");
-                String thuonghieu = rs.getString("THUONGHIEU");
+                while (rs.next()) {
+                    int msp = rs.getInt("MSP");
+                    String ten = rs.getString("TEN");
+                    String hinhanh = rs.getString("HINHANH");
+                    int mncc = rs.getInt("MNCC");
+                    String thuonghieu = rs.getString("THUONGHIEU");
 
-                Integer namsanxuat = rs.getObject("NAMSANXUAT") != null 
-                        ? rs.getInt("NAMSANXUAT") 
-                        : null;
+                    Integer namsanxuat = rs.getObject("NAMSANXUAT") != null 
+                            ? rs.getInt("NAMSANXUAT") 
+                            : null;
 
-                double gianhap = rs.getDouble("GIANHAP");
-                double giaban = rs.getDouble("GIABAN");
-                int thoigianbaohanh = rs.getInt("THOIGIANBAOHANH");
-                int soluong = rs.getInt("SOLUONG");
+                    double gianhap = rs.getDouble("GIANHAP");
+                    double giaban = rs.getDouble("GIABAN");
+                    int thoigianbaohanh = rs.getInt("THOIGIANBAOHANH");
+                    int soluong = rs.getInt("SOLUONG");
 
-                SanPhamDTO sp = new SanPhamDTO(
-                    msp, ten, hinhanh, mncc, thuonghieu,
-                    namsanxuat, gianhap, giaban,
-                    thoigianbaohanh, soluong
-                );
+                    SanPhamDTO sp = new SanPhamDTO(
+                        msp, ten, hinhanh, mncc, thuonghieu,
+                        namsanxuat, gianhap, giaban,
+                        thoigianbaohanh, soluong
+                    );
 
-                result.add(sp);
+                    result.add(sp);
+                }
+
+            } catch (Exception e) {
+                Logger.getLogger(SanPhamDAO.class.getName())
+                      .log(Level.SEVERE, "Lỗi load sản phẩm", e);
+                e.printStackTrace();
             }
 
-        } catch (Exception e) {
-            Logger.getLogger(SanPhamDAO.class.getName())
-                  .log(Level.SEVERE, "Lỗi load sản phẩm", e);
-            e.printStackTrace();
+            return result;
         }
-
-        return result;
-    }
     @Override
     public SanPhamDTO selectById(String t) {
         SanPhamDTO result = null;

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import DAO.SanPhamDAO;
 import DTO.SanPhamDTO;
+import config.JDBCUtil;
 
 public class SanPhamBUS {
 
@@ -11,12 +12,15 @@ public class SanPhamBUS {
     public ArrayList<SanPhamDTO> listSP = new ArrayList<>();
     DonViBUS dvbus = new DonViBUS();
     LoaiBUS lbus = new LoaiBUS();
+    private String currentMcn;
 
     public SanPhamBUS() {
+        this.currentMcn = JDBCUtil.getCurrentMcn();
     }
 
     public ArrayList<SanPhamDTO> getAll() {
-        ensureLoaded();
+        setCurrentMcn(null);
+        ensureLoaded(this.currentMcn);
         return this.listSP;
     }
 
@@ -26,23 +30,44 @@ public class SanPhamBUS {
      * @return Danh sách sản phẩm
      */
     public ArrayList<SanPhamDTO> getAll(String mcn) {
-        this.listSP = spDAO.selectAllByMCN(mcn);
+        String normalizedMcn = mcn == null ? null : mcn.trim().toUpperCase();
+        boolean mcnChanged = normalizedMcn != null && !normalizedMcn.equals(this.currentMcn);
+        setCurrentMcn(mcn);
+        if (mcnChanged) {
+            this.listSP = spDAO.selectAllByMCN(this.currentMcn);
+            return this.listSP;
+        }
+        ensureLoaded(this.currentMcn);
         return this.listSP;
     }
 
-    private void ensureLoaded() {
+    public ArrayList<SanPhamDTO> refresh(String mcn) {
+        setCurrentMcn(mcn);
+        this.listSP = spDAO.selectAllByMCN(this.currentMcn);
+        return this.listSP;
+    }
+
+    private void setCurrentMcn(String mcn) {
+        if (mcn != null && !mcn.isBlank()) {
+            this.currentMcn = mcn.trim().toUpperCase();
+        } else if (this.currentMcn == null || this.currentMcn.isBlank()) {
+            this.currentMcn = JDBCUtil.getCurrentMcn();
+        }
+    }
+
+    private void ensureLoaded(String mcn) {
         if (this.listSP == null || this.listSP.isEmpty()) {
-            this.listSP = spDAO.selectAll();
+            this.listSP = spDAO.selectAllByMCN(mcn);
         }
     }
 
     public SanPhamDTO getByIndex(int index) {
-        ensureLoaded();
+        ensureLoaded(this.currentMcn);
         return this.listSP.get(index);
     }
 
     public SanPhamDTO getByMaSP(int masp) {
-        ensureLoaded();
+        ensureLoaded(this.currentMcn);
         int vitri = -1;
         int i = 0;
         while (i < this.listSP.size() && vitri == -1) {
@@ -64,7 +89,7 @@ public class SanPhamBUS {
     }
 
     public int getIndexByMaSP(int masanpham) {
-        ensureLoaded();
+        ensureLoaded(this.currentMcn);
         int i = 0;
         int vitri = -1;
         while (i < this.listSP.size() && vitri == -1) {
@@ -78,7 +103,7 @@ public class SanPhamBUS {
     }
 
     public ArrayList<SanPhamDTO> search(String text, String type) {
-        ensureLoaded();
+        ensureLoaded(this.currentMcn);
         text = text.toLowerCase();
         ArrayList<SanPhamDTO> result = new ArrayList<>();
         switch (type) {
@@ -121,8 +146,8 @@ public class SanPhamBUS {
 
     public Boolean add(SanPhamDTO lh) {
         boolean check = spDAO.insert(lh) != 0;
-        if (check) {       
-            ensureLoaded();
+        if (check) {
+            ensureLoaded(this.currentMcn);
             this.listSP.add(lh);
         }
         return check;
@@ -131,7 +156,7 @@ public class SanPhamBUS {
     public Boolean delete(SanPhamDTO lh) {
         boolean check = spDAO.delete(Integer.toString(lh.getMSP())) != 0;
         if (check) {
-            ensureLoaded();
+            ensureLoaded(this.currentMcn);
             this.listSP.remove(lh);
         }
         return check;
@@ -140,7 +165,7 @@ public class SanPhamBUS {
     public Boolean update(SanPhamDTO lh) {
         boolean check = spDAO.update(lh) != 0;
         if (check) {
-            ensureLoaded();
+            ensureLoaded(this.currentMcn);
             this.listSP.set(getIndexByMaSP(lh.getMSP()), lh);
         }
         return check;
@@ -194,7 +219,7 @@ public class SanPhamBUS {
     }
 
     public int getQuantity() {
-        ensureLoaded();
+        ensureLoaded(this.currentMcn);
         int n = 0;
         for(SanPhamDTO i : this.listSP) {
             if (i.getSL() != 0) {
@@ -205,7 +230,7 @@ public class SanPhamBUS {
     }
 
     public boolean checkMV(String ISBN) {
-        ensureLoaded();
+        ensureLoaded(this.currentMcn);
         for(SanPhamDTO i : this.listSP) {
             if(i.getMV().equals(ISBN)) return false;
         }
@@ -214,7 +239,7 @@ public class SanPhamBUS {
     }
     
     public boolean checkDuplicate(String tenSP, String donVi, String loai) {
-        ensureLoaded();
+        ensureLoaded(this.currentMcn);
         for(SanPhamDTO i : this.listSP) {
             String maDonVi = String.valueOf(i.getMDV());
             String maLoai = String.valueOf(i.getML());
@@ -226,7 +251,7 @@ public class SanPhamBUS {
     }
 
     public SanPhamDTO getSPbyMV(String ISBN) {
-        ensureLoaded();
+        ensureLoaded(this.currentMcn);
         for(SanPhamDTO i : this.listSP) {
             if(i.getMV().equals(ISBN)) return i;
         }
