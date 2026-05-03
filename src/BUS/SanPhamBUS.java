@@ -77,44 +77,6 @@ public class SanPhamBUS {
         return vitri;
     }
 
-    public ArrayList<SanPhamDTO> getByMaViTri(int mavitri) {
-        ensureLoaded();
-        ArrayList<SanPhamDTO> result = new ArrayList<>();
-        for (SanPhamDTO sp : listSP) {
-            if (sp.getMVT() != null && sp.getMVT() == mavitri) {
-                result.add(sp);
-            }
-        }
-        return result;
-    }
-
-    public Boolean add(SanPhamDTO lh) {
-        boolean check = spDAO.insert(lh) != 0;
-        if (check) {       
-            ensureLoaded();
-            this.listSP.add(lh);
-        }
-        return check;
-    }
-
-    public Boolean delete(SanPhamDTO lh) {
-        boolean check = spDAO.delete(Integer.toString(lh.getMSP())) != 0;
-        if (check) {
-            ensureLoaded();
-            this.listSP.remove(lh);
-        }
-        return check;
-    }
-
-    public Boolean update(SanPhamDTO lh) {
-        boolean check = spDAO.update(lh) != 0;
-        if (check) {
-            ensureLoaded();
-            this.listSP.set(getIndexByMaSP(lh.getMSP()), lh);
-        }
-        return check;
-    }
-
     public ArrayList<SanPhamDTO> search(String text, String type) {
         ensureLoaded();
         text = text.toLowerCase();
@@ -155,6 +117,33 @@ public class SanPhamBUS {
         }
         
         return result;
+    }
+
+    public Boolean add(SanPhamDTO lh) {
+        boolean check = spDAO.insert(lh) != 0;
+        if (check) {       
+            ensureLoaded();
+            this.listSP.add(lh);
+        }
+        return check;
+    }
+
+    public Boolean delete(SanPhamDTO lh) {
+        boolean check = spDAO.delete(Integer.toString(lh.getMSP())) != 0;
+        if (check) {
+            ensureLoaded();
+            this.listSP.remove(lh);
+        }
+        return check;
+    }
+
+    public Boolean update(SanPhamDTO lh) {
+        boolean check = spDAO.update(lh) != 0;
+        if (check) {
+            ensureLoaded();
+            this.listSP.set(getIndexByMaSP(lh.getMSP()), lh);
+        }
+        return check;
     }
 
     public ArrayList<SanPhamDTO> search(ArrayList<SanPhamDTO> listSP, String text, String type) {
@@ -249,6 +238,6 @@ public class SanPhamBUS {
     }
     
     public ArrayList<SanPhamDTO> getSPByMaDonVi(int maDonVi) {
-        return spDAO.getSPByMaDonVi(maDonVi);
+        return new ArrayList<>(); // Phương thức không còn sử dụng vì MVT đã bị xóa
     }
 }
