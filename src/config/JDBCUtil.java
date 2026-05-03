@@ -52,6 +52,10 @@ public class JDBCUtil {
         currentMcn = mcn == null ? null : mcn.trim().toUpperCase();
     }
 
+    public static String getCurrentMcn() {
+        return currentMcn;
+    }
+
     public static String buildSqlServerUrl(String instanceName, String databaseName) {
         return "jdbc:sqlserver://" + instanceName
                 + ";databaseName=" + databaseName
