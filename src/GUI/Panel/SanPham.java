@@ -84,7 +84,7 @@ public final class SanPham extends JPanel implements ActionListener {
         tableSanPham.getColumnModel().getColumn(1).setPreferredWidth(180);
         tableSanPham.setFocusable(false);
         tableSanPham.setAutoCreateRowSorter(true);
-        TableSorter.configureTableColumnSorter(tableSanPham, 2, TableSorter.INTEGER_COMPARATOR);
+        TableSorter.configureTableColumnSorter(tableSanPham, 3, TableSorter.INTEGER_COMPARATOR);  // 🔥 Column 3 = Số lượng tồn (Quantity)
         tableSanPham.setDefaultEditor(Object.class, null);
         initPadding();
 
@@ -112,6 +112,7 @@ public final class SanPham extends JPanel implements ActionListener {
             public void keyReleased(KeyEvent e) {
                 String type = (String) search.cbxChoose.getSelectedItem();
                 String txt = search.txtSearchForm.getText();
+                spBUS.getAll(nv.getMCN()); // Ensure data is loaded from correct branch
                 listSP = spBUS.search(txt, type);
                 loadDataTalbe(listSP);
             }
@@ -183,9 +184,14 @@ public final class SanPham extends JPanel implements ActionListener {
                         return;
                     }
 
-                    spBUS.delete(sp);
-                    JOptionPane.showMessageDialog(this, "Xoá sản phẩm thành công!");
-                    loadDataTalbe(listSP);
+                    boolean ok = spBUS.delete(sp);
+                    if (ok) {
+                        JOptionPane.showMessageDialog(this, "Xoá sản phẩm thành công!");
+                        listSP = spBUS.refresh(nv != null ? nv.getMCN() : null); // Reload from DB
+                        loadDataTalbe(listSP);
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Xoá sản phẩm thất bại!");
+                    }
                 }
             }
         } else if (e.getSource() == mainFunction.btn.get("detail")) {

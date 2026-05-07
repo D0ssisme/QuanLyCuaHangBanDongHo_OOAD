@@ -89,7 +89,15 @@ public final class NhanVien extends JPanel {
         functionBar.add(mainFunction);
         search = new IntegratedSearch(new String[]{"Tất cả", "Họ tên", "Email"});
         functionBar.add(search);
-        search.btnReset.addActionListener(nvBus);
+        
+        // 🔥 Reset button: clear search + reload full data
+        search.btnReset.addActionListener((java.awt.event.ActionEvent e) -> {
+            search.txtSearchForm.setText("");
+            search.cbxChoose.setSelectedIndex(0);
+            listnv = nvBus.getAll();
+            loadDataTalbe(listnv);
+        });
+        
         search.cbxChoose.addActionListener(nvBus);
         search.txtSearchForm.getDocument().addDocumentListener(new NhanVienBUS(search.txtSearchForm, this));
 
@@ -105,7 +113,7 @@ public final class NhanVien extends JPanel {
         scrollTableSanPham = new JScrollPane();
         tableNhanVien = new JTable();
         tblModel = new DefaultTableModel();
-        String[] header = new String[]{"MNV", "Họ tên", "Giới tính", "Ngày Sinh", "SDT", "Email", "Chức vụ"};
+        String[] header = new String[]{"MNV", "Họ tên", "Giới tính", "Ngày Sinh", "SDT", "Email", "Chức vụ", "Chi nhánh"};
 
         tblModel.setColumnIdentifiers(header);
         tableNhanVien.setModel(tblModel);
@@ -119,6 +127,7 @@ public final class NhanVien extends JPanel {
         tableNhanVien.getColumnModel().getColumn(4).setCellRenderer(centerRenderer);
         tableNhanVien.getColumnModel().getColumn(4).setCellRenderer(centerRenderer);
         tableNhanVien.getColumnModel().getColumn(5).setCellRenderer(centerRenderer);
+        tableNhanVien.getColumnModel().getColumn(7).setCellRenderer(centerRenderer);
         scrollTableSanPham.setViewportView(tableNhanVien);
         main.add(scrollTableSanPham);
     }
@@ -129,19 +138,7 @@ public final class NhanVien extends JPanel {
         this.m = m;
         initComponent();
         tableNhanVien.setDefaultEditor(Object.class, null);
-        // Lấy mã chi nhánh của người đang đăng nhập và chỉ hiển thị nhân viên cùng chi nhánh
-        try {
-            String currentMcn = nvBus.getMcnbyMnv(m.user.getMNV());
-            ArrayList<DTO.NhanVienDTO> all = nvBus.getAll();
-            for (DTO.NhanVienDTO nvDto : all) {
-                if (nvDto.getMCN() != null && nvDto.getMCN().equals(currentMcn)) {
-                    listnv.add(nvDto);
-                }
-            }
-        } catch (Exception e) {
-            // nếu có lỗi, fallback: hiển thị tất cả
-            listnv = nvBus.getAll();
-        }
+        listnv = nvBus.getAll();
         loadDataTalbe(listnv);
     }
 
@@ -149,17 +146,7 @@ public final class NhanVien extends JPanel {
         this.m = m;
         initComponent();
         tableNhanVien.setDefaultEditor(Object.class, null);
-        try {
-            String currentMcn = nvBus.getMcnbyMnv(currentUser.getMNV());
-            ArrayList<DTO.NhanVienDTO> all = nvBus.getAll();
-            for (DTO.NhanVienDTO nvDto : all) {
-                if (nvDto.getMCN() != null && nvDto.getMCN().equals(currentMcn)) {
-                    listnv.add(nvDto);
-                }
-            }
-        } catch (Exception e) {
-            listnv = nvBus.getAll();
-        }
+        listnv = nvBus.getAll();
         loadDataTalbe(listnv);
     }
 
@@ -183,7 +170,7 @@ public final class NhanVien extends JPanel {
         for (DTO.NhanVienDTO nhanVien : listnv) {
             tblModel.addRow(new Object[]{
                 nhanVien.getMNV(), nhanVien.getHOTEN(), nhanVien.getGIOITINH() == 1 ? "Nam" : "Nữ", nhanVien.getNGAYSINH(), nhanVien.getSDT(), nhanVien.getEMAIL(),
-                listcv.get(nhanVien.getMCV()-1).getTENCV()
+                listcv.get(nhanVien.getMCV()-1).getTENCV(), nhanVien.getMCN()
             });
         }
     }

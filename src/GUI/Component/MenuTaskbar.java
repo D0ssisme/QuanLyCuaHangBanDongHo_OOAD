@@ -118,10 +118,10 @@ public class MenuTaskbar extends JPanel {
         this.mnv=user.getMNV();
     
         this.nhomQuyenDTO = NhomQuyenDAO.getInstance().selectById(Integer.toString(tk.getMNQ()));
-       
-
         
         this.nhanVienDTO = NhanVienDAO.getInstance().selectById(Integer.toString(tk.getMNV()));
+        System.out.println("✅ LOGIN: MNV=" + tk.getMNV() + " | nhanVienDTO=" + (nhanVienDTO != null ? "FOUND" : "NOT FOUND"));
+        
         listQuyen = ChiTietQuyenDAO.getInstance().selectAll(Integer.toString(tk.getMNQ()));
         initComponent();
     }
@@ -256,6 +256,7 @@ public class MenuTaskbar extends JPanel {
             case 8 -> main.setPanel(getPhieuNhapPanel());
             case 9 -> main.setPanel(getPhanQuyenPanel());
             case 10 -> main.setPanel(getTaiKhoanPanel());
+            case 11 -> main.setPanel(getThongKePanel());
          
             case 12 -> {
     int confirm = JOptionPane.showConfirmDialog(null, 
@@ -263,6 +264,10 @@ public class MenuTaskbar extends JPanel {
         JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE);
 
     if (confirm == JOptionPane.OK_OPTION) {
+        // 🔥 Close tất cả database connections trước khi logout
+        config.JDBCUtil.shutdownPools();
+        System.out.println("✅ Đã close tất cả database connections");
+        
         main.dispose();
         new login_page().setVisible(true);
     }
@@ -391,6 +396,17 @@ public class MenuTaskbar extends JPanel {
         return taiKhoan;
     }
 
+    private ThongKe getThongKePanel() {
+        if (thongKe == null) {
+            System.out.println("[MENU] 📈 Dang load trang: THONG KE...");
+            thongKe = new ThongKe();  // 🔥 No parameters
+            System.out.println("[MENU] ✅ Trang THONG KE tai xong");
+        } else {
+            System.out.println("[MENU] 📈 Hien thi trang THONG KE (cache)");
+        }
+        return thongKe;
+    }
+
   public boolean checkRole(String machucnang) {
     return true;
 }
@@ -399,6 +415,14 @@ public class MenuTaskbar extends JPanel {
   public void in4(JPanel info) {
     // DEBUG
     System.out.println("DEBUG MCN = " + mcn);
+    
+    // Check null nhanVienDTO
+    if (nhanVienDTO == null) {
+        System.err.println("❌ ERROR: nhanVienDTO is null in MenuTaskbar.in4()");
+        JLabel lblError = new JLabel("Lỗi: Không tìm thấy dữ liệu nhân viên");
+        info.add(lblError, BorderLayout.CENTER);
+        return;
+    }
 
     JPanel pnlIcon = new JPanel(new FlowLayout(FlowLayout.CENTER));
     pnlIcon.setPreferredSize(new Dimension(70, 80));
@@ -430,7 +454,8 @@ public class MenuTaskbar extends JPanel {
     pnlInfo.add(lblUsername);
 
     // 👉 Nhóm quyền
-    lblTenNhomQuyen = new JLabel(nhomQuyenDTO.getTennhomquyen());
+    String tenNhomQuyen = (nhomQuyenDTO != null) ? nhomQuyenDTO.getTennhomquyen() : "N/A";
+    lblTenNhomQuyen = new JLabel(tenNhomQuyen);
     lblTenNhomQuyen.putClientProperty("FlatLaf.style", "font: 110% $light.font");
     lblTenNhomQuyen.setForeground(new Color(107, 114, 128));
     pnlInfo.add(lblTenNhomQuyen);

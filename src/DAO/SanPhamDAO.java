@@ -157,90 +157,132 @@ public int update(SanPhamDTO t) {
             return result;
         }
     @Override
-    public SanPhamDTO selectById(String t) {
-        SanPhamDTO result = null;
-        try (Connection con = JDBCUtil.getConnection()) {
-            String sql = "SELECT MSP, TEN, HINHANH, MNCC, THUONGHIEU, NAMSANXUAT, GIANHAP, GIABAN, THOIGIANBAOHANH FROM SANPHAM WHERE MSP=?";
-            PreparedStatement pst = con.prepareStatement(sql);
-            pst.setString(1, t);
-            try (ResultSet rs = pst.executeQuery()) {
-                while (rs.next()) {
-                    int msp = rs.getInt("MSP");
-                    String ten = rs.getString("TEN");
-                    String hinhanh = rs.getString("HINHANH");
-                    int mncc = rs.getInt("MNCC");
-                    String thuonghieu = rs.getString("THUONGHIEU");
-                    Integer namsanxuat = rs.getObject("NAMSANXUAT") != null ? rs.getInt("NAMSANXUAT") : null;
-                    double gianhap = rs.getDouble("GIANHAP");
-                    double giaban = rs.getDouble("GIABAN");
-                    int thoigianbaohanh = rs.getInt("THOIGIANBAOHANH");
-                    result = new SanPhamDTO(msp, ten, hinhanh, mncc, thuonghieu,
-                        namsanxuat, gianhap, giaban, thoigianbaohanh);
-                }
+  public SanPhamDTO selectById(String t) {
+    SanPhamDTO result = null;
+
+    try (Connection con = JDBCUtil.getConnection();
+         CallableStatement cs = con.prepareCall("{call GetSanPhamById(?)}")) {
+
+        cs.setInt(1, Integer.parseInt(t));
+
+        try (ResultSet rs = cs.executeQuery()) {
+            if (rs.next()) {
+                int msp = rs.getInt("MSP");
+                String ten = rs.getString("TEN");
+                String hinhanh = rs.getString("HINHANH");
+                int mncc = rs.getInt("MNCC");
+                String thuonghieu = rs.getString("THUONGHIEU");
+
+                Integer namsanxuat = rs.getObject("NAMSANXUAT") != null
+                        ? rs.getInt("NAMSANXUAT")
+                        : null;
+
+                double gianhap = rs.getDouble("GIANHAP");
+                double giaban = rs.getDouble("GIABAN");
+                int thoigianbaohanh = rs.getInt("THOIGIANBAOHANH");
+
+                result = new SanPhamDTO(
+                        msp, ten, hinhanh, mncc,
+                        thuonghieu, namsanxuat,
+                        gianhap, giaban, thoigianbaohanh
+                );
             }
-        } catch (SQLException e) {
-            Logger.getLogger(SanPhamDAO.class.getName()).log(Level.SEVERE, "Lỗi tìm sản phẩm theo ID", e);
         }
-        return result;
+
+    } catch (SQLException ex) {
+        Logger.getLogger(SanPhamDAO.class.getName())
+              .log(Level.SEVERE, "Lỗi gọi stored GetSanPhamById", ex);
     }
 
+    return result;
+}
 
 
     @Override
+    
     public int getAutoIncrement() {
-        int result = -1;
-        try (Connection con = JDBCUtil.getConnection()) {
-            String sql = "SELECT CAST(IDENT_CURRENT('SANPHAM') AS INT) AS AUTO_INCREMENT";
-            PreparedStatement pst = con.prepareStatement(sql);
-            try (ResultSet rs2 = pst.executeQuery()) {
-                if (!rs2.isBeforeFirst()) {
-                    System.out.println("No data");
-                } else {
-                    while (rs2.next()) {
-                        result = rs2.getInt("AUTO_INCREMENT");
-                    }
-                }
+    int result = -1;
+
+    try (Connection con = JDBCUtil.getConnection();
+         CallableStatement cs = con.prepareCall("{call GetAutoIncrementSanPham()}");
+         ResultSet rs = cs.executeQuery()) {
+
+        if (!rs.isBeforeFirst()) {
+            System.out.println("No data");
+        } else {
+            while (rs.next()) {
+                result = rs.getInt("AUTO_INCREMENT");
             }
-        } catch (SQLException ex) {
-            Logger.getLogger(SanPhamDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return result;
+
+    } catch (SQLException ex) {
+        Logger.getLogger(SanPhamDAO.class.getName()).log(Level.SEVERE, null, ex);
     }
 
+    return result;
+}
 
 
-    public int updateGia(int MSP, int giaxuat) {
-        int result = 0;
-        try (Connection con = JDBCUtil.getConnection()) {
-            String sql = "UPDATE SANPHAM SET GIABAN=? WHERE MSP = ?";
-            PreparedStatement pst = con.prepareStatement(sql);
-            pst.setInt(1, giaxuat);
-            pst.setInt(2, MSP);
-            result = pst.executeUpdate();
-        } catch (SQLException ex) {
-            Logger.getLogger(SanPhamDAO.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return result;
+  public int updateGia(int MSP, int giaxuat) {
+    int result = 0;
+
+    try (Connection con = JDBCUtil.getConnection();
+         CallableStatement cs = con.prepareCall("{call UpdateGiaSanPham(?, ?)}")) {
+
+        cs.setInt(1, MSP);
+        cs.setInt(2, giaxuat);
+        result = cs.executeUpdate();
+
+    } catch (SQLException ex) {
+        Logger.getLogger(SanPhamDAO.class.getName()).log(Level.SEVERE, null, ex);
     }
 
-    public int getMaxMSP() {
-        int maxMSP = -1;
-        try (Connection con = JDBCUtil.getConnection()) {
-            String sql = "SELECT MAX(MSP) AS maxMSP FROM SANPHAM";
-            PreparedStatement pst = con.prepareStatement(sql);
-            try (ResultSet rs = pst.executeQuery()) {
-                if (rs.next()) {
-                    maxMSP = rs.getInt("maxMSP");
-                }
-            }
-        } catch (SQLException ex) {
-            Logger.getLogger(SanPhamDAO.class.getName()).log(Level.SEVERE, null, ex);
+    return result;
+}
+  
+  public int getMaxMSP() {
+    int maxMSP = -1;
+
+    try (Connection con = JDBCUtil.getConnection();
+         CallableStatement cs = con.prepareCall("{call GetMaxMSPSanPham()}");
+         ResultSet rs = cs.executeQuery()) {
+
+        if (rs.next()) {
+            maxMSP = rs.getInt("maxMSP");
         }
-        return maxMSP;
+
+    } catch (SQLException ex) {
+        Logger.getLogger(SanPhamDAO.class.getName()).log(Level.SEVERE, null, ex);
     }
 
+    return maxMSP;
+}
 
 
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
     // Phương thức này không còn sử dụng vì MVT đã bị xóa khỏi SanPham
     public ArrayList<SanPhamDTO> getSPByMaLoai(int maLoai) {
         ArrayList<SanPhamDTO> result = new ArrayList<>();

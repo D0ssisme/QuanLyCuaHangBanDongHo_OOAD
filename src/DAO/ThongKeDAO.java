@@ -112,10 +112,11 @@ public class ThongKeDAO {
         ArrayList<ThongKeDoanhThuDTO> result = new ArrayList<>();
         try {
             Connection con = JDBCUtil.getConnection();
-            String sqlSetStartYear = "SET @start_year = ?;";
-            String sqlSetEndYear = "SET @end_year = ?;";
+            // 🔥 SQL Server syntax - no RECURSIVE keyword
             String sql = """
-                        WITH RECURSIVE years(year) AS (
+                        DECLARE @start_year INT = ?;
+                        DECLARE @end_year INT = ?;
+                        WITH years(year) AS (
                         SELECT @start_year
                         UNION ALL
                         SELECT year + 1
@@ -133,15 +134,10 @@ public class ThongKeDAO {
                         LEFT JOIN CTPHIEUNHAP ON SANPHAM.MSP = CTPHIEUNHAP.MSP
                         GROUP BY years.year
                         ORDER BY years.year;""";
-            PreparedStatement pstStartYear = con.prepareStatement(sqlSetStartYear);
-            PreparedStatement pstEndYear = con.prepareStatement(sqlSetEndYear);
             PreparedStatement pstSelect = con.prepareStatement(sql);
 
-            pstStartYear.setInt(1, year_start);
-            pstEndYear.setInt(1, year_end);
-
-            pstStartYear.execute();
-            pstEndYear.execute();
+            pstSelect.setInt(1, year_start);
+            pstSelect.setInt(2, year_end);
 
             ResultSet rs = pstSelect.executeQuery();
             while (rs.next()) {
@@ -286,14 +282,14 @@ public class ThongKeDAO {
     public ArrayList<ThongKeTungNgayTrongThangDTO> getThongKeTungNgayTrongThang(int thang, int nam) {
         ArrayList<ThongKeTungNgayTrongThangDTO> result = new ArrayList<>();
         try {
-            String ngayString = nam + "-" + thang + "-" + "01";
+            String ngayString = nam + "-" + String.format("%02d", thang) + "-01";
             Connection con = JDBCUtil.getConnection();
             String sql = "SELECT \n"
                     + "  dates.date AS ngay, \n"
                     + "  COALESCE(SUM(CTPHIEUNHAP.TIENNHAP), 0) AS chiphi, \n"
                     + "  COALESCE(SUM(CTPHIEUXUAT.TIENXUAT), 0) AS doanhthu\n"
                     + "FROM (\n"
-                    + "  SELECT DATE('" + ngayString + "') + INTERVAL c.number DAY AS date\n"
+                    + "  SELECT DATEADD(DAY, c.number, CAST('" + ngayString + "' AS DATE)) AS date\n"
                     + "  FROM (\n"
                     + "    SELECT 0 AS number\n"
                     + "    UNION ALL SELECT 1\n"
@@ -327,9 +323,9 @@ public class ThongKeDAO {
                     + "    UNION ALL SELECT 29\n"
                     + "    UNION ALL SELECT 30\n"
                     + "  ) AS c\n"
-                    + "  WHERE DATE('" + ngayString + "') + INTERVAL c.number DAY <= LAST_DAY('" + ngayString + "')\n"
+                    + "  WHERE DATEADD(DAY, c.number, CAST('" + ngayString + "' AS DATE)) <= EOMONTH(CAST('" + ngayString + "' AS DATE))\n"
                     + ") AS dates\n"
-                    + "LEFT JOIN PHIEUXUAT ON DATE(PHIEUXUAT.TG) = dates.date\n"
+                    + "LEFT JOIN PHIEUXUAT ON CAST(PHIEUXUAT.TG AS DATE) = dates.date\n"
                     + "LEFT JOIN CTPHIEUXUAT ON PHIEUXUAT.MPX = CTPHIEUXUAT.MPX\n"
                     + "LEFT JOIN SANPHAM ON SANPHAM.MSP = CTPHIEUXUAT.MSP\n"
                     + "LEFT JOIN CTPHIEUNHAP ON SANPHAM.MSP = CTPHIEUNHAP.MSP\n"
