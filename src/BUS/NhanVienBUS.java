@@ -62,6 +62,8 @@ public class NhanVienBUS implements ActionListener, DocumentListener {
     }
 
     public ArrayList<DTO.NhanVienDTO> getAll() {
+        // 🔥 Reload dữ liệu từ database mỗi lần gọi, không dùng cache
+        this.listNv = NhanVienDAO.getInstance().selectAll();
         return this.listNv;
     }
 

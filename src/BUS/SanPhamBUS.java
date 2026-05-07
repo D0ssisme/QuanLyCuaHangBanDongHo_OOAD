@@ -157,7 +157,9 @@ public class SanPhamBUS {
         boolean check = spDAO.delete(Integer.toString(lh.getMSP())) != 0;
         if (check) {
             ensureLoaded(this.currentMcn);
-            this.listSP.remove(lh);
+            // Remove by MSP to avoid relying on object identity/equality
+            int id = lh.getMSP();
+            this.listSP.removeIf(p -> p.getMSP() == id);
         }
         return check;
     }

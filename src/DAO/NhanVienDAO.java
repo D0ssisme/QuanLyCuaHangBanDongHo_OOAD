@@ -8,7 +8,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
+import java.sql.CallableStatement; 
 import DTO.NhanVienDTO;
 import config.JDBCUtil;
 
@@ -18,50 +18,56 @@ public class NhanVienDAO implements DAOinterface<NhanVienDTO>{
     }
 
     
-    public String getMCNByMNV(int mnv) {
+  public String getMCNByMNV(int mnv) {
     String mcn = null;
-    try {
-        Connection con = JDBCUtil.getConnection();
 
-        String sql = "SELECT MCN FROM nhanvien WHERE MNV = ?";
-        PreparedStatement pst = con.prepareStatement(sql);
-        pst.setInt(1, mnv);
+    try (Connection con = JDBCUtil.getConnection();
+         CallableStatement cs = con.prepareCall("{call GetMCNByMNV(?)}")) {
 
-        ResultSet rs = pst.executeQuery();
+        cs.setInt(1, mnv);
 
-        if (rs.next()) {
-            mcn = rs.getString("MCN");
+        try (ResultSet rs = cs.executeQuery()) {
+            if (rs.next()) {
+                mcn = rs.getString("MCN");
+            }
         }
 
-        JDBCUtil.closeConnection(con);
     } catch (Exception e) {
         e.printStackTrace();
     }
+
     return mcn;
 }
     @Override
-    public int insert(NhanVienDTO t) {
-        int result = 0 ;
-        try {
-            Connection con = (Connection) JDBCUtil.getConnection();
-            String sql = "INSERT INTO NHANVIEN(HOTEN, GIOITINH, SDT, NGAYSINH, TT, EMAIL, MCV, MCN) VALUES (?,?,?,?,?,?,?,?)";
-            PreparedStatement pst = (PreparedStatement) con.prepareStatement(sql);
-            pst.setString(1, t.getHOTEN());
-            pst.setInt(2, t.getGIOITINH());
-            pst.setString(3, t.getSDT());
-            pst.setDate(4, (Date) (t.getNGAYSINH()));
-            pst.setInt(5, t.getTT());
-            pst.setString(6, t.getEMAIL());
-            pst.setInt(7, t.getMCV());
-            pst.setString(8, t.getMCN());
-            result = pst.executeUpdate();
-            JDBCUtil.closeConnection(con);
-        } catch (SQLException ex) {
-            Logger.getLogger(NhanVienDAO.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return result;
-    }
+public int insert(NhanVienDTO t) {
+    int result = 0;
+    try {
+        Connection con = JDBCUtil.getConnection();
 
+        // ✅ gọi đúng SP global
+        String sql = "{CALL InsertNhanVien(?, ?, ?, ?, ?, ?, ?, ?)}";
+        CallableStatement cs = con.prepareCall(sql);
+
+        cs.setString(1, t.getHOTEN());
+        cs.setInt(2, t.getGIOITINH());
+        cs.setString(3, t.getSDT());
+        cs.setDate(4, new java.sql.Date(t.getNGAYSINH().getTime()));
+        cs.setInt(5, t.getTT());
+        cs.setString(6, t.getEMAIL());
+        cs.setInt(7, t.getMCV());
+        cs.setString(8, t.getMCN());
+
+        result = cs.executeUpdate();
+
+        cs.close();          // thêm cho sạch
+        JDBCUtil.closeConnection(con);
+
+    } catch (SQLException ex) {
+        Logger.getLogger(NhanVienDAO.class.getName()).log(Level.SEVERE, null, ex);
+    }
+    return result;
+}
+   
     @Override
     public int update(NhanVienDTO t) {
         int result = 0 ;
@@ -191,7 +197,7 @@ public class NhanVienDAO implements DAOinterface<NhanVienDTO>{
         NhanVienDTO result = null;
         try {
             Connection con = (Connection) JDBCUtil.getConnection();
-            String sql = "SELECT * FROM NHANVIEN WHERE MNV = ?";
+            String sql = "SELECT * FROM NHANVIEN WHERE MNV = ? AND TT = 1";
             PreparedStatement pst = (PreparedStatement) con.prepareStatement(sql);
             pst.setString(1, t);
             ResultSet rs = (ResultSet) pst.executeQuery();
@@ -209,6 +215,38 @@ public class NhanVienDAO implements DAOinterface<NhanVienDTO>{
             }
             JDBCUtil.closeConnection(con);
         } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("❌ selectById() lỗi MNV=" + t);
+        }
+        return result;
+    }
+    
+    // 🔥 Query NHANVIEN từ MANHDUNG1 (database trung tâm) để lấy MCN
+    public NhanVienDTO selectByIdFromCentral(String mnv) {
+        NhanVienDTO result = null;
+        try {
+            Connection con = (Connection) JDBCUtil.getConnection("DEFAULT");  // 🔥 MANHDUNG1
+            String sql = "SELECT * FROM NHANVIEN WHERE MNV = ? AND TT = 1";
+            PreparedStatement pst = (PreparedStatement) con.prepareStatement(sql);
+            pst.setString(1, mnv);
+            ResultSet rs = (ResultSet) pst.executeQuery();
+            while(rs.next()){
+                int MNV = rs.getInt("MNV");
+                String HOTEN = rs.getString("HOTEN");
+                int GIOITINH = rs.getInt("GIOITINH");
+                Date NGAYSINH = rs.getDate("NGAYSINH");
+                String SDT = rs.getString("SDT");
+                int TT = rs.getInt("TT");
+                String EMAIL = rs.getString("EMAIL");
+                int MCV = rs.getInt("MCV");
+                String MCN=rs.getString("MCN");
+                result = new NhanVienDTO(MNV, HOTEN, GIOITINH, SDT, NGAYSINH, TT, EMAIL, MCV,MCN);
+                System.out.println("✅ selectByIdFromCentral: MNV=" + mnv + " | MCN=" + MCN);
+            }
+            JDBCUtil.closeConnection(con);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("❌ selectByIdFromCentral() lỗi MNV=" + mnv);
         }
         return result;
     }

@@ -92,6 +92,12 @@ public class NhanVienDialog extends JDialog {
             female.setSelected(true);
         }
         jcBd.setDate(nhanVien.getNGAYSINH());
+        
+        // Set chi nhánh (MCN)
+        if (nhanVien.getMCN() != null && !nhanVien.getMCN().isEmpty()) {
+            chinhanh.setSelectedItem(nhanVien.getMCN());
+        }
+        
         this.setLocationRelativeTo(null);
         this.setVisible(true);
     }
@@ -188,6 +194,7 @@ public class NhanVienDialog extends JDialog {
                             NhanVienDAO.getInstance().insert(nV);
                             nv.insertNv(nV);
                             nv.loadTable();
+                            JOptionPane.showMessageDialog(NhanVienDialog.this, "Thêm nhân viên thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
                             dispose();
                         } catch (ParseException ex) {
                             Logger.getLogger(NhanVienDialog.class.getName()).log(Level.SEVERE, null, ex);
@@ -225,6 +232,7 @@ public class NhanVienDialog extends JDialog {
                             System.out.println("Index:" + nv.getIndex());
                             nv.listNv.set(nv.getIndex(), nV);
                             nv.loadTable();
+                            JOptionPane.showMessageDialog(NhanVienDialog.this, "Sửa thông tin nhân viên thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
                             dispose();
                         } catch (ParseException ex) {
                             Logger.getLogger(NhanVienDialog.class.getName()).log(Level.SEVERE, null, ex);

@@ -16,6 +16,7 @@ import com.formdev.flatlaf.FlatLaf;
 import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont;
 
 import DTO.TaiKhoanDTO;
+import DTO.NhanVienDTO;
 import DAO.NhanVienDAO;
 import config.JDBCUtil;
 import GUI.Component.MenuTaskbar;
@@ -61,7 +62,15 @@ public class Main extends JFrame {
 
     public Main(TaiKhoanDTO user) throws UnsupportedLookAndFeelException {
        
-        mcn = NhanVienDAO.getInstance().getMCNByMNV(user.getMNV());
+        // 🔥 Lấy nhân viên từ MANHDUNG1 (database trung tâm) để lấy MCN
+        System.out.println("🔍 Main Constructor: user.getMNV() = " + user.getMNV());
+        
+        NhanVienDTO nhanVienDTO = NhanVienDAO.getInstance().selectByIdFromCentral(String.valueOf(user.getMNV()));
+        System.out.println("🔍 Main Constructor: nhanVienDTO = " + (nhanVienDTO != null ? "FOUND" : "NOT FOUND"));
+        
+        mcn = (nhanVienDTO != null && nhanVienDTO.getMCN() != null) ? nhanVienDTO.getMCN() : "CN2";
+        System.out.println("🔍 Main Constructor: mcn = " + mcn);
+        
         this.user = user;
         JDBCUtil.setCurrentMcn(mcn);
         
