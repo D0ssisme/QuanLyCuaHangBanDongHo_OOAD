@@ -9,11 +9,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.sql.CallableStatement;  // fix lỗi CallableStatement
 import java.sql.Types; 
+import DAO.TonKhoDAO;
 
 import DTO.SanPhamDTO;
 import config.JDBCUtil;
 
 public class SanPhamDAO implements DAOinterface<SanPhamDTO> {
+
+    private final TonKhoDAO tonKhoDAO = new TonKhoDAO();
 
     public static SanPhamDAO getInstance() {
         return new SanPhamDAO();
@@ -115,8 +118,10 @@ public int update(SanPhamDTO t) {
 
         public ArrayList<SanPhamDTO> selectAllByMCN(String mcn) {
             ArrayList<SanPhamDTO> result = new ArrayList<>();
+                String normalizedMcn = mcn == null ? null : mcn.trim().toUpperCase();
+                boolean allBranches = "ALL".equals(normalizedMcn);
 
-            try (Connection con = JDBCUtil.getConnection(mcn)) {
+                try (Connection con = allBranches ? JDBCUtil.getConnection() : JDBCUtil.getConnection(mcn)) {
 
                 String sql = "{CALL GetAllSanPham}";
                 CallableStatement cs = con.prepareCall(sql);
@@ -137,7 +142,7 @@ public int update(SanPhamDTO t) {
                     double gianhap = rs.getDouble("GIANHAP");
                     double giaban = rs.getDouble("GIABAN");
                     int thoigianbaohanh = rs.getInt("THOIGIANBAOHANH");
-                    int soluong = rs.getInt("SOLUONG");
+                    int soluong = tonKhoDAO.getTonKhoByMSPAndMCN(msp, allBranches ? "ALL" : mcn);
 
                     SanPhamDTO sp = new SanPhamDTO(
                         msp, ten, hinhanh, mncc, thuonghieu,
@@ -180,11 +185,12 @@ public int update(SanPhamDTO t) {
                 double gianhap = rs.getDouble("GIANHAP");
                 double giaban = rs.getDouble("GIABAN");
                 int thoigianbaohanh = rs.getInt("THOIGIANBAOHANH");
+                int soluong = tonKhoDAO.getTonKhoByMSPAndMCN(msp, JDBCUtil.getCurrentMcn());
 
                 result = new SanPhamDTO(
                         msp, ten, hinhanh, mncc,
                         thuonghieu, namsanxuat,
-                        gianhap, giaban, thoigianbaohanh
+                        gianhap, giaban, thoigianbaohanh, soluong
                 );
             }
         }

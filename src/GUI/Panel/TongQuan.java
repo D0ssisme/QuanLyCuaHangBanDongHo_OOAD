@@ -9,7 +9,10 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.RenderingHints;
 // import java.awt.GridBagConstraints;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -27,8 +30,6 @@ import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 // import javax.swing.OverlayLayout;
 import javax.swing.border.EmptyBorder;
-
-import com.formdev.flatlaf.FlatIntelliJLaf;
 
 import BUS.KhachHangBUS;
 import BUS.MaKhuyenMaiBUS;
@@ -79,19 +80,7 @@ public class TongQuan extends JPanel {
     public TongQuan(TaiKhoanDTO user, String mcn) {
         this.currentUser = user;
         this.mcn = mcn;
-        initBUS();
         initComponent();
-        FlatIntelliJLaf.registerCustomDefaultsSource("style");
-        FlatIntelliJLaf.setup();
-    }
-
-    private void initBUS() {
-        thongKeBUS = new ThongKeBUS();
-        sanPhamBUS = new SanPhamBUS();
-        hoaDonBUS = new PhieuXuatBUS();
-        phieuNhapBUS = new PhieuNhapBUS();
-        khachHangBUS = new KhachHangBUS();
-        maKhuyenMaiBUS = new MaKhuyenMaiBUS();
     }
 
     private void initComponent() {
@@ -99,18 +88,22 @@ public class TongQuan extends JPanel {
         this.setBackground(BackgroundColor);
         this.setBorder(new EmptyBorder(20, 20, 20, 20));
 
-        if (currentUser != null) {
-            int roleId = currentUser.getMNQ();
-            switch (roleId) {
-                case 1 -> createManagerWorkspace();
-                case 2 -> createSalesWorkspace();
-                case 3 -> createWarehouseWorkspace();
-                // default -> createDefaultWorkspace();
+        ImageIcon bannerIcon = getBannerIcon();
+        JPanel bannerPanel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                if (bannerIcon != null) {
+                    Graphics2D g2 = (Graphics2D) g.create();
+                    g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+                    g2.drawImage(bannerIcon.getImage(), 0, 0, getWidth(), getHeight(), this);
+                    g2.dispose();
+                }
             }
-        } else {
-            // createDefaultWorkspace();
-
-        }
+        };
+        bannerPanel.setPreferredSize(new Dimension(0, 220));
+        bannerPanel.setOpaque(false);
+        this.add(bannerPanel, BorderLayout.CENTER);
     }
 
     // ==================== ICON LOADER (QUAN TRỌNG) ====================
@@ -130,6 +123,15 @@ public class TongQuan extends JPanel {
             return null;
         Image img = icon.getImage().getScaledInstance(w, h, Image.SCALE_SMOOTH);
         return new ImageIcon(img);
+    }
+
+    private ImageIcon getBannerIcon() {
+        java.net.URL url = getClass().getResource("/img/banner.jpg");
+        if (url == null) {
+            System.err.println("Không tìm thấy banner: /img/banner.jpg");
+            return null;
+        }
+        return new ImageIcon(url);
     }
 
     // ==================== WORKSPACE CHO QUẢN LÝ CỬA HÀNG ====================

@@ -120,10 +120,22 @@ public class ChiTietPhieuNhapDAO implements ChiTietInterface<ChiTietPhieuNhapDTO
 
     @Override
     public ArrayList<ChiTietPhieuNhapDTO> selectAll(String t) {
+        return selectAll(t, JDBCUtil.getCurrentMcn());
+    }
+
+    public ArrayList<ChiTietPhieuNhapDTO> selectAll(String t, String mcn) {
         ArrayList<ChiTietPhieuNhapDTO> result = new ArrayList<>();
         try {
             Connection con = (Connection) JDBCUtil.getConnection();
-            String sql = "SELECT * FROM CTPHIEUNHAP WHERE MPN = ?";
+            String normalizedMcn = mcn == null ? "" : mcn.trim().toUpperCase();
+            String currentMcn = JDBCUtil.getCurrentMcn();
+            String tableSource;
+            if (normalizedMcn.isBlank() || "ALL".equalsIgnoreCase(normalizedMcn) || (currentMcn != null && currentMcn.trim().equalsIgnoreCase(normalizedMcn))) {
+                tableSource = "CTPHIEUNHAP";
+            } else {
+                tableSource = "[" + normalizedMcn + "].quanlycuahangdongho.dbo.CTPHIEUNHAP";
+            }
+            String sql = "SELECT * FROM " + tableSource + " WHERE MPN = ?";
             PreparedStatement pst = (PreparedStatement) con.prepareStatement(sql);
             pst.setString(1, t);
             ResultSet rs = (ResultSet) pst.executeQuery();

@@ -119,6 +119,55 @@ public class TonKhoDAO implements DAOinterface<TonKhoDTO> {
     }
 
     /**
+     * Lấy tồn kho từ tất cả chi nhánh (CN1, CN2, CN3) sử dụng Linked Server
+     * Tính tổng SOLUONG theo MSP từ tất cả chi nhánh
+     * @return ArrayList các TonKhoDTO với SOLUONG là tổng từ tất cả chi nhánh (MKHO = 0)
+     */
+    public ArrayList<TonKhoDTO> selectAllBranches() {
+        ArrayList<TonKhoDTO> result = new ArrayList<>();
+        try {
+            // Kết nối đến server hiện tại
+            Connection con = JDBCUtil.getConnection();
+            
+            StringBuilder sqlBuilder = new StringBuilder();
+            sqlBuilder.append("SELECT MSP, SUM(SOLUONG) AS SOLUONG FROM (");
+            sqlBuilder.append(" SELECT MSP, SOLUONG FROM tonkho ");
+
+            PreparedStatement linkedStmt = con.prepareStatement("SELECT name FROM sys.servers WHERE is_linked = 1");
+            ResultSet linkedRs = linkedStmt.executeQuery();
+            while (linkedRs.next()) {
+                String serverName = linkedRs.getString("name");
+                sqlBuilder.append(" UNION ALL SELECT MSP, SOLUONG FROM [")
+                          .append(serverName)
+                          .append("].quanlycuahangdongho.dbo.tonkho ");
+            }
+            linkedRs.close();
+            linkedStmt.close();
+
+            sqlBuilder.append(") AS GopLai GROUP BY MSP ORDER BY MSP");
+            String sql = sqlBuilder.toString();
+            
+            PreparedStatement pst = con.prepareStatement(sql);
+            ResultSet rs = pst.executeQuery();
+            
+            while (rs.next()) {
+                int msp = rs.getInt("MSP");
+                int soluong = rs.getInt("SOLUONG");
+                // MKHO = 0 để chỉ đây là tổng từ tất cả chi nhánh
+                TonKhoDTO tonkho = new TonKhoDTO(msp, 0, soluong);
+                result.add(tonkho);
+            }
+            
+            JDBCUtil.closeConnection(con);
+        } catch (SQLException e) {
+            Logger.getLogger(TonKhoDAO.class.getName()).log(Level.SEVERE, 
+                "Lỗi lấy tồn kho từ tất cả chi nhánh", e);
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    /**
      * Lấy tồn kho của một sản phẩm ở một kho cụ thể
      */
     public TonKhoDTO getTonKhoByMSPAndMKHO(int msp, int mkho) {
@@ -215,13 +264,34 @@ public class TonKhoDAO implements DAOinterface<TonKhoDTO> {
     public int getTonKhoByMSPAndMCN(int msp, String mcn) {
         int result = 0;
         try {
+            if (mcn != null && "ALL".equalsIgnoreCase(mcn.trim())) {
+                ArrayList<TonKhoDTO> allBranches = selectAllBranches();
+                for (TonKhoDTO tk : allBranches) {
+                    if (tk.getMSP() == msp) {
+                        return tk.getSOLUONG();
+                    }
+                }
+                return 0;
+            }
+
             Connection con = JDBCUtil.getConnection();
-            String sql = "SELECT SUM(TONKHO.SOLUONG) as SOLUONG FROM TONKHO " +
-                         "JOIN KHO ON TONKHO.MKHO = KHO.MKHO " +
-                         "WHERE TONKHO.MSP = ? AND KHO.MCN = ?";
+            String currentMcn = JDBCUtil.getCurrentMcn();
+            String normalizedMcn = mcn == null ? null : mcn.trim().toUpperCase();
+            String sql;
+
+            if (normalizedMcn != null && normalizedMcn.equalsIgnoreCase(currentMcn)) {
+                sql = "SELECT SUM(TONKHO.SOLUONG) as SOLUONG FROM TONKHO " +
+                      "JOIN KHO ON TONKHO.MKHO = KHO.MKHO " +
+                      "WHERE TONKHO.MSP = ? AND KHO.MCN = ?";
+            } else {
+                sql = "SELECT SUM(TK.SOLUONG) as SOLUONG FROM [" + normalizedMcn + "].quanlycuahangdongho.dbo.TONKHO TK " +
+                      "JOIN [" + normalizedMcn + "].quanlycuahangdongho.dbo.KHO K ON TK.MKHO = K.MKHO " +
+                      "WHERE TK.MSP = ? AND K.MCN = ?";
+            }
+
             PreparedStatement pst = con.prepareStatement(sql);
             pst.setInt(1, msp);
-            pst.setString(2, mcn);
+            pst.setString(2, normalizedMcn);
             ResultSet rs = pst.executeQuery();
             if (rs.next()) {
                 result = rs.getInt("SOLUONG");

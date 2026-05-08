@@ -52,6 +52,14 @@ public class PhieuXuatDTO extends PhieuDTO {
         this.LYDOHUY = LYDOHUY;
     }
 
+    public String getMCN() {
+        return MCN;
+    }
+
+    public void setMCN(String MCN) {
+        this.MCN = MCN;
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;

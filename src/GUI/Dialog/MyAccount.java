@@ -2,7 +2,6 @@ package GUI.Dialog;
 
 import BUS.NhanVienBUS;
 import BUS.TaiKhoanBUS;
-import DAO.NhanVienDAO;
 import DAO.TaiKhoanDAO;
 import DTO.NhanVienDTO;
 import DTO.TaiKhoanDTO;
@@ -217,7 +216,7 @@ public class MyAccount extends JDialog implements ActionListener {
                         JOptionPane.showMessageDialog(this, "Số điện thoại không được rỗng và phải có 10 ký tự sô", "Chỉnh sửa số điện thoại", JOptionPane.WARNING_MESSAGE);
                     } else {
                         NhanVienDTO nvdto = new NhanVienDTO(nv.getMNV(), nv.getHOTEN(), nv.getGIOITINH(), text_phone, nv.getNGAYSINH(), nv.getTT(), nv.getEMAIL(), nv.getMCV(),nv.getMCN());
-                        NhanVienDAO.getInstance().update(nvdto);
+                        nvbus.updateNhanVien(nvdto);
                         changed = true;
                         }
                     }
@@ -227,7 +226,7 @@ public class MyAccount extends JDialog implements ActionListener {
                         JOptionPane.showMessageDialog(this, "Email không được rỗng và phải đúng định dạng", "Chỉnh sửa EMAIL", JOptionPane.WARNING_MESSAGE);
                         } else {
                             NhanVienDTO nvdto = new NhanVienDTO(nv.getMNV(), nv.getHOTEN(), nv.getGIOITINH(), text_phone, nv.getNGAYSINH(), nv.getTT(), text_email, nv.getMCV(),nv.getMCN());
-                            NhanVienDAO.getInstance().update(nvdto);
+                            nvbus.updateNhanVien(nvdto);
                             changed = true;
                         }
                     }

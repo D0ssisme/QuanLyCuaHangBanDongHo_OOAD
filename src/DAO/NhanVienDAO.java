@@ -20,25 +20,23 @@ public class NhanVienDAO implements DAOinterface<NhanVienDTO>{
     
   public String getMCNByMNV(int mnv) {
     String mcn = null;
-
-    try (Connection con = JDBCUtil.getConnection();
-         CallableStatement cs = con.prepareCall("{call GetMCNByMNV(?)}")) {
-
-        cs.setInt(1, mnv);
-
-        try (ResultSet rs = cs.executeQuery()) {
+    try (Connection con = JDBCUtil.getConnection("DEFAULT");
+         PreparedStatement ps = con.prepareStatement("SELECT MCN FROM NHANVIEN WHERE MNV = ?")) {
+        ps.setInt(1, mnv);
+        try (ResultSet rs = ps.executeQuery()) {
             if (rs.next()) {
                 mcn = rs.getString("MCN");
             }
         }
-
     } catch (Exception e) {
         e.printStackTrace();
     }
-
     return mcn;
 }
+  
+  
     @Override
+   
 public int insert(NhanVienDTO t) {
     int result = 0;
     try {
@@ -70,43 +68,164 @@ public int insert(NhanVienDTO t) {
    
     @Override
     public int update(NhanVienDTO t) {
-        int result = 0 ;
-        try {
-            Connection con = (Connection) JDBCUtil.getConnection();
+        return update(t, null);
+    }
+
+    public int update(NhanVienDTO t, String sourceMcnHint) {
+        int result = 0;
+        String currentMcn = JDBCUtil.getCurrentMcn();
+        String sourceMcn = sourceMcnHint == null ? null : sourceMcnHint.trim().toUpperCase();
+        String loginMcn = currentMcn == null ? null : currentMcn.trim().toUpperCase();
+
+        boolean useLocal = sourceMcn == null || sourceMcn.isBlank() || loginMcn == null || loginMcn.equalsIgnoreCase(sourceMcn);
+
+        if (useLocal) {
             String sql = "UPDATE NHANVIEN SET HOTEN = ?, GIOITINH = ?, NGAYSINH = ?, SDT = ?, TT = ?, EMAIL = ?, MCV = ?, MCN = ? WHERE MNV = ?";
-            PreparedStatement pst = (PreparedStatement) con.prepareStatement(sql);
-            pst.setString(1, t.getHOTEN());
-            pst.setInt(2, t.getGIOITINH());
-            pst.setDate(3, (Date) t.getNGAYSINH());
-            pst.setString(4, t.getSDT());
-            pst.setInt(5, t.getTT());
-            pst.setString(6, t.getEMAIL());
-            pst.setInt(7, t.getMCV());
-            pst.setString(8, t.getMCN());
-            pst.setInt(9, t.getMNV());
+            try (Connection con = JDBCUtil.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
+                pst.setString(1, t.getHOTEN());
+                pst.setInt(2, t.getGIOITINH());
+                pst.setDate(3, new java.sql.Date(t.getNGAYSINH().getTime()));
+                pst.setString(4, t.getSDT());
+                pst.setInt(5, t.getTT());
+                pst.setString(6, t.getEMAIL());
+                pst.setInt(7, t.getMCV());
+                pst.setString(8, t.getMCN());
+                pst.setInt(9, t.getMNV());
+                result = pst.executeUpdate();
+                System.out.println("[NhanVienDAO] UPDATE LOCAL: MNV=" + t.getMNV() + " | affected=" + result);
+            } catch (SQLException ex) {
+                Logger.getLogger(NhanVienDAO.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            return result;
+        }
+
+        if (!isSupportedMcn(sourceMcn)) {
+            Logger.getLogger(NhanVienDAO.class.getName())
+                    .log(Level.WARNING, "[NhanVienDAO] UPDATE skipped due to invalid source MCN: {0}", sourceMcn);
+            return 0;
+        }
+
+        try (Connection con = JDBCUtil.getConnection();
+             CallableStatement cst = con.prepareCall("{call UpdateNhanVienLinked(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}")) {
+            cst.setInt(1, t.getMNV());
+            cst.setString(2, t.getHOTEN());
+            cst.setInt(3, t.getGIOITINH());
+            cst.setDate(4, new java.sql.Date(t.getNGAYSINH().getTime()));
+            cst.setString(5, t.getSDT());
+            cst.setInt(6, t.getTT());
+            cst.setString(7, t.getEMAIL());
+            cst.setInt(8, t.getMCV());
+            cst.setString(9, t.getMCN());
+            cst.setString(10, sourceMcn);
+
+            boolean hasResultSet = cst.execute();
+            if (hasResultSet) {
+                try (ResultSet rs = cst.getResultSet()) {
+                    if (rs.next()) {
+                        result = rs.getInt("AffectedRows");
+                    }
+                }
+            }
+            System.out.println("[NhanVienDAO] UPDATE LINKED (SP): MNV=" + t.getMNV() + " source=" + sourceMcn + " | affected=" + result);
+        } catch (SQLException ex) {
+            Logger.getLogger(NhanVienDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+    public int delete(String mnv, String sourceMcnHint) {
+    int result = 0;
+    String currentMcn = JDBCUtil.getCurrentMcn();
+    String sourceMcn = sourceMcnHint == null ? null : sourceMcnHint.trim().toUpperCase();
+    String loginMcn = currentMcn == null ? null : currentMcn.trim().toUpperCase();
+
+    boolean useLocal = sourceMcn == null || sourceMcn.isBlank() || loginMcn == null || loginMcn.equalsIgnoreCase(sourceMcn);
+
+    if (useLocal) {
+        // local soft-delete
+        try (Connection con = JDBCUtil.getConnection();
+             PreparedStatement pst = con.prepareStatement("UPDATE NHANVIEN SET TT = -1 WHERE MNV = ?")) {
+            pst.setInt(1, Integer.parseInt(mnv));
             result = pst.executeUpdate();
-            JDBCUtil.closeConnection(con);
+            System.out.println("[NhanVienDAO] DELETE LOCAL: MNV=" + mnv + " | affected=" + result);
         } catch (SQLException ex) {
             Logger.getLogger(NhanVienDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
 
-    @Override
-    public int delete(String t) {
-        int result = 0 ;
+    // linked case: perform update against linked server using four-part name (same approach as updateLinked)
+    if (!isSupportedMcn(sourceMcn)) {
+        Logger.getLogger(NhanVienDAO.class.getName()).log(Level.WARNING, "[NhanVienDAO] DELETE skipped due to invalid source MCN: {0}", sourceMcn);
+        return 0;
+    }
+
+    String routeName = getMcnToLinkedServerName(sourceMcn);
+    String sql = "UPDATE " + routeName + ".quanlycuahangdongho.dbo.NHANVIEN SET TT = -1 WHERE MNV = ?";
+
+    try (Connection con = JDBCUtil.getConnection();
+         PreparedStatement pst = con.prepareStatement(sql)) {
+        pst.setInt(1, Integer.parseInt(mnv));
+        result = pst.executeUpdate();
+        System.out.println("[NhanVienDAO] DELETE LINKED: MNV=" + mnv + " source=" + sourceMcn + " | affected=" + result);
+    } catch (SQLException ex) {
+        Logger.getLogger(NhanVienDAO.class.getName()).log(Level.WARNING, "DELETE LINKED failed, will try DEFAULT DB fallback", ex);
+        // fallback to default DB
+        try (Connection defCon = JDBCUtil.getConnection("DEFAULT");
+             PreparedStatement pst2 = defCon.prepareStatement("UPDATE NHANVIEN SET TT = -1 WHERE MNV = ?")) {
+            pst2.setInt(1, Integer.parseInt(mnv));
+            int defAffected = pst2.executeUpdate();
+            result += defAffected;
+            System.out.println("[NhanVienDAO] DELETE FALLBACK DEFAULT DB: MNV=" + mnv + " | affected=" + defAffected);
+        } catch (SQLException e) {
+            Logger.getLogger(NhanVienDAO.class.getName()).log(Level.SEVERE, null, e);
+        }
+    }
+
+    return result;
+}
+    
+     //LOAD NHÂN VIÊN THEO MÃ CHI NHÁNH SELECT
+    public ArrayList<NhanVienDTO> selectAllByMCN(String mcn) {
+        ArrayList<NhanVienDTO> result = new ArrayList<>();
+        String selectedMcn = mcn == null ? "ALL" : mcn.trim().toUpperCase();
+
         try {
-            Connection con = (Connection) JDBCUtil.getConnection();
-            String sql = "UPDATE NHANVIEN SET TT = -1 WHERE MNV = ?";
-            PreparedStatement pst = (PreparedStatement) con.prepareStatement(sql);
-            pst.setString(1, t);
-            result = pst.executeUpdate();
-            JDBCUtil.closeConnection(con);
-        } catch (SQLException ex) {
-            Logger.getLogger(NhanVienDAO.class.getName()).log(Level.SEVERE, null, ex);
+            try (Connection con = JDBCUtil.getConnection();
+                 CallableStatement cst = con.prepareCall("{call sp_GetNhanVienByMCN(?, ?)}")) {
+                cst.setString(1, selectedMcn);
+                cst.setString(2, JDBCUtil.getCurrentMcn());
+                try (ResultSet rs = cst.executeQuery()) {
+                    while (rs.next()) {
+                        result.add(mapNhanVien(rs));
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return result;
     }
+    
+    
+
+    private String getMcnToLinkedServerName(String mcn) {
+        if (mcn == null || mcn.isBlank()) {
+            return "[CN1]";
+        }
+        return "[" + mcn.trim().toUpperCase() + "]";
+    }
+
+    private boolean isSupportedMcn(String mcn) {
+        return "CN1".equalsIgnoreCase(mcn)
+                || "CN2".equalsIgnoreCase(mcn)
+                || "CN3".equalsIgnoreCase(mcn);
+    }
+
+    @Override
+    public int delete(String t) {
+        return delete(t, null);
+    }
+
 
     @Override
     public ArrayList<NhanVienDTO> selectAll() {
@@ -136,6 +255,20 @@ public int insert(NhanVienDTO t) {
         return result;
     }
     
+   
+    
+    private NhanVienDTO mapNhanVien(ResultSet rs) throws SQLException {
+        int MNV = rs.getInt("MNV");
+        String HOTEN = rs.getString("HOTEN");
+        int GIOITINH = rs.getInt("GIOITINH");
+        Date NGAYSINH = rs.getDate("NGAYSINH");
+        String SDT = rs.getString("SDT");
+        int TT = rs.getInt("TT");
+        String EMAIL = rs.getString("EMAIL");
+        int MCV = rs.getInt("MCV");
+        String MCN = rs.getString("MCN");
+        return new NhanVienDTO(MNV, HOTEN, GIOITINH, SDT, NGAYSINH, TT, EMAIL, MCV, MCN);
+    }
     
     public ArrayList<NhanVienDTO> selectAlll() {
         ArrayList<NhanVienDTO> result = new ArrayList<NhanVienDTO>();
@@ -241,7 +374,6 @@ public int insert(NhanVienDTO t) {
                 int MCV = rs.getInt("MCV");
                 String MCN=rs.getString("MCN");
                 result = new NhanVienDTO(MNV, HOTEN, GIOITINH, SDT, NGAYSINH, TT, EMAIL, MCV,MCN);
-                System.out.println("✅ selectByIdFromCentral: MNV=" + mnv + " | MCN=" + MCN);
             }
             JDBCUtil.closeConnection(con);
         } catch (Exception e) {

@@ -1,5 +1,5 @@
-DROP DATABASE IF EXISTS QuanLyCuaHangDongHo;
-CREATE DATABASE QuanLyCuaHangDongHo;
+IF DB_ID(N'QuanLyCuaHangDongHo') IS NULL
+    CREATE DATABASE QuanLyCuaHangDongHo;
 USE QuanLyCuaHangDongHo;
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";

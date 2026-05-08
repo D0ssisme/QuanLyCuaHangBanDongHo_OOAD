@@ -7,6 +7,7 @@ import java.awt.GridLayout;
 import java.util.ArrayList;
 
 import javax.swing.BoxLayout;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -35,9 +36,11 @@ public final class NhanVien extends JPanel {
     JScrollPane scrollTableSanPham;
     MainFunction mainFunction;
     public IntegratedSearch search;
+    JComboBox<String> cbxBranch;
     Main m;
     ArrayList<DTO.NhanVienDTO> listnv = new ArrayList<>();
     public ChucVuBUS cvbus = new ChucVuBUS();
+    private boolean suppressBranchEvents;
 
     Color BackgroundColor = new Color(248, 249, 250);
     private DefaultTableModel tblModel;
@@ -77,7 +80,7 @@ public final class NhanVien extends JPanel {
         // functionBar là thanh bên trên chứa các nút chức năng như thêm xóa sửa, và tìm kiếm
         functionBar = new PanelBorderRadius();
         functionBar.setPreferredSize(new Dimension(0, 100));
-        functionBar.setLayout(new GridLayout(1, 2, 50, 0));
+        functionBar.setLayout(new BorderLayout(10, 0));
         functionBar.setBorder(new EmptyBorder(10, 10, 10, 10));
         contentCenter.add(functionBar, BorderLayout.NORTH);
 
@@ -86,16 +89,34 @@ public final class NhanVien extends JPanel {
         for (String ac : action) {
             mainFunction.btn.get(ac).addActionListener(nvBus);
         }
-        functionBar.add(mainFunction);
+        functionBar.add(mainFunction, BorderLayout.WEST);
+        
+        // Thêm branch selector ở giữa
+        JPanel branchPanel = new JPanel(new BorderLayout());
+        branchPanel.setBackground(Color.white);
+        branchPanel.setBorder(new EmptyBorder(0, 5, 0, 5));
+        cbxBranch = new JComboBox<>(new String[]{"Tất cả chi nhánh", "Chi nhánh 1", "Chi nhánh 2", "Chi nhánh 3"});
+        cbxBranch.setPreferredSize(new Dimension(200, 35));
+        branchPanel.add(cbxBranch, BorderLayout.CENTER);
+        functionBar.add(branchPanel, BorderLayout.CENTER);
+        
+        // Event listener: load employees by selected branch
+        cbxBranch.addActionListener(e -> {
+            if (suppressBranchEvents) {
+                return;
+            }
+            String selectedBranch = (String) cbxBranch.getSelectedItem();
+            loadDataTalbe(nvBus.getAllByBranchLabel(selectedBranch));
+        });
+        
         search = new IntegratedSearch(new String[]{"Tất cả", "Họ tên", "Email"});
-        functionBar.add(search);
+        functionBar.add(search, BorderLayout.EAST);
         
         // 🔥 Reset button: clear search + reload full data
         search.btnReset.addActionListener((java.awt.event.ActionEvent e) -> {
             search.txtSearchForm.setText("");
             search.cbxChoose.setSelectedIndex(0);
-            listnv = nvBus.getAll();
-            loadDataTalbe(listnv);
+            refreshToCurrentServerBranch();
         });
         
         search.cbxChoose.addActionListener(nvBus);
@@ -138,16 +159,14 @@ public final class NhanVien extends JPanel {
         this.m = m;
         initComponent();
         tableNhanVien.setDefaultEditor(Object.class, null);
-        listnv = nvBus.getAll();
-        loadDataTalbe(listnv);
+        initDefaultBranchLoad(null);
     }
 
     public NhanVien(Main m, DTO.NhanVienDTO currentUser) {
         this.m = m;
         initComponent();
         tableNhanVien.setDefaultEditor(Object.class, null);
-        listnv = nvBus.getAll();
-        loadDataTalbe(listnv);
+        initDefaultBranchLoad(currentUser);
     }
 
     public Integer getCurrentUserMNV() {
@@ -174,4 +193,38 @@ public final class NhanVien extends JPanel {
             });
         }
     }
+
+    private void initDefaultBranchLoad(DTO.NhanVienDTO currentUser) {
+        String defaultBranchLabel = currentUser != null && currentUser.getMCN() != null
+                ? branchLabelForMcn(currentUser.getMCN())
+                : nvBus.getCurrentBranchLabel();
+
+        suppressBranchEvents = true;
+        cbxBranch.setSelectedItem(defaultBranchLabel);
+        suppressBranchEvents = false;
+
+        loadDataTalbe(nvBus.getAllByBranchLabel(defaultBranchLabel));
+    }
+
+    public void refreshToCurrentServerBranch() {
+        String currentBranchLabel = nvBus.getCurrentBranchLabel();
+        suppressBranchEvents = true;
+        cbxBranch.setSelectedItem(currentBranchLabel);
+        suppressBranchEvents = false;
+        loadDataTalbe(nvBus.getAllByBranchLabel(currentBranchLabel));
+    }
+
+    private String branchLabelForMcn(String mcn) {
+        if ("CN1".equalsIgnoreCase(mcn)) {
+            return "Chi nhánh 1";
+        }
+        if ("CN2".equalsIgnoreCase(mcn)) {
+            return "Chi nhánh 2";
+        }
+        if ("CN3".equalsIgnoreCase(mcn)) {
+            return "Chi nhánh 3";
+        }
+        return "Tất cả chi nhánh";
+    }
+    
 }

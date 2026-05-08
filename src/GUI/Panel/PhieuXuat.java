@@ -22,6 +22,7 @@ import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 import javax.swing.BoxLayout;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -61,6 +62,7 @@ public final class PhieuXuat extends JPanel implements ActionListener, KeyListen
     MainFunction mainFunction;
     IntegratedSearch search;
     DefaultTableModel tblModel;
+    JComboBox<String> cbxChiNhanh;
     SelectForm cbxKhachHang, cbxNhanVien;
     InputDate dateStart, dateEnd;
     InputForm moneyMin, moneyMax;
@@ -103,7 +105,7 @@ public final class PhieuXuat extends JPanel implements ActionListener, KeyListen
 
         functionBar = new PanelBorderRadius();
         functionBar.setPreferredSize(new Dimension(0, 100));
-        functionBar.setLayout(new GridLayout(1, 2, 50, 0));
+        functionBar.setLayout(new BorderLayout(10, 0));
         functionBar.setBorder(new EmptyBorder(10, 10, 10, 10));
 
         String[] action = {"create", "detail", "cancel", "export"};
@@ -115,11 +117,21 @@ public final class PhieuXuat extends JPanel implements ActionListener, KeyListen
             mainFunction.btn.get(ac).addActionListener(this);
         }
 
+        functionBar.add(mainFunction, BorderLayout.WEST);
+
+        JPanel branchPanel = new JPanel(new BorderLayout());
+        branchPanel.setBackground(Color.white);
+        branchPanel.setBorder(new EmptyBorder(0, 5, 0, 5));
+        cbxChiNhanh = new JComboBox<>(new String[]{"Tất cả chi nhánh", "Chi nhánh 1", "Chi nhánh 2", "Chi nhánh 3"});
+        cbxChiNhanh.setPreferredSize(new Dimension(200, 35));
+        branchPanel.add(cbxChiNhanh, BorderLayout.CENTER);
+        functionBar.add(branchPanel, BorderLayout.CENTER);
+
         search = new IntegratedSearch(new String[]{"Tất cả", "Mã phiếu", "Khách hàng", "Nhân viên xuất"});
         search.cbxChoose.addItemListener(this);
         search.txtSearchForm.addKeyListener(this);
         search.btnReset.addActionListener(this);
-        functionBar.add(search);
+        functionBar.add(search, BorderLayout.EAST);
         contentCenter.add(functionBar, BorderLayout.NORTH);
 
         leftFunc();
@@ -132,7 +144,7 @@ public final class PhieuXuat extends JPanel implements ActionListener, KeyListen
         tablePhieuXuat = new JTable();
         scrollTablePhieuXuat = new JScrollPane();
         tblModel = new DefaultTableModel();
-        String[] header = new String[]{"STT", "Mã hóa đơn", "Khách hàng", "Nhân viên", "Thời gian", "Điểm tích lũy", "Tổng tiền", "Trạng thái"};
+        String[] header = new String[]{"STT", "Mã phiếu xuất", "Khách hàng", "Nhân viên", "Thời gian", "Điểm tích lũy", "Tổng tiền", "Trạng thái"};
         tblModel.setColumnIdentifiers(header);
         tablePhieuXuat.setModel(tblModel);
         tablePhieuXuat.setFocusable(false);
