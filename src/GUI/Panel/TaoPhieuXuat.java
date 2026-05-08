@@ -658,8 +658,17 @@ public final class TaoPhieuXuat extends JPanel {
                 if (!phieuXuatBUS.checkSLPx(chitietphieu, nv.getMCN())) {
                     JOptionPane.showMessageDialog(null, "Không đủ số lượng để tạo phiếu!");
                 } else {
-                    NhanVienDTO nhanVienDTO = NhanVienDAO.getInstance().selectById(nv.getMNV() + "");
-                    String mcn = nhanVienDTO.getMCN();
+                    // Prefer the already-passed NhanVienDTO (should contain MCN loaded at login).
+                    String mcn = (nv != null) ? nv.getMCN() : null;
+                    if (mcn == null) {
+                        // Fallback: try loading from central DB to retrieve MCN
+                        try {
+                            NhanVienDTO central = NhanVienDAO.getInstance().selectByIdFromCentral(String.valueOf(nv.getMNV()));
+                            if (central != null) mcn = central.getMCN();
+                        } catch (Exception ex) {
+                            mcn = null;
+                        }
+                    }
                     if (makh == -1 || makh == 1) {
                         long now = System.currentTimeMillis();
                         Timestamp currenTime = new Timestamp(now);

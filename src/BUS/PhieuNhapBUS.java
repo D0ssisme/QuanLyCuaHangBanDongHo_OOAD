@@ -53,8 +53,21 @@ public class PhieuNhapBUS {
         return ctPhieuNhapDAO.selectAll(Integer.toString(maphieunhap));
     }
 
+    public ArrayList<ChiTietPhieuNhapDTO> getChiTietPhieu(int maphieunhap, String mcn) {
+        return ctPhieuNhapDAO.selectAll(Integer.toString(maphieunhap), mcn);
+    }
+
     public ArrayList<ChiTietPhieuDTO> getChiTietPhieu_Type(int maphieunhap) {
         ArrayList<ChiTietPhieuNhapDTO> arr = ctPhieuNhapDAO.selectAll(Integer.toString(maphieunhap));
+        ArrayList<ChiTietPhieuDTO> result = new ArrayList<>();
+        for (ChiTietPhieuDTO i : arr) {
+            result.add(i);
+        }
+        return result;
+    }
+
+    public ArrayList<ChiTietPhieuDTO> getChiTietPhieu_Type(int maphieunhap, String mcn) {
+        ArrayList<ChiTietPhieuNhapDTO> arr = ctPhieuNhapDAO.selectAll(Integer.toString(maphieunhap), mcn);
         ArrayList<ChiTietPhieuDTO> result = new ArrayList<>();
         for (ChiTietPhieuDTO i : arr) {
             result.add(i);

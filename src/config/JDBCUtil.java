@@ -7,7 +7,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.HashMap;
 import java.util.Map;
-import javax.swing.JOptionPane;
 
 public class JDBCUtil {
 
@@ -42,7 +41,6 @@ public class JDBCUtil {
                 try {
                     ds.close();
                 } catch (Exception ex) {
-                    System.out.println("[DB] WARN | failed to close existing pool for " + key + " | " + ex.getMessage());
                 }
             }
         }
@@ -82,15 +80,9 @@ public class JDBCUtil {
             String key = branch != null && !branch.isBlank() ? branch : "DEFAULT";
             HikariDataSource ds = getOrCreatePool(key, url);
             Connection conn = ds.getConnection();
-            String serverInfo = extractServerInfo(url);
-            String dbInfo = extractDatabaseName(url);
-            String branchInfo = key;
-            System.out.println("[DB] OPEN (pool) | branch=" + branchInfo + " | server=" + serverInfo + " | db=" + dbInfo + " | thread=" + Thread.currentThread().getName());
-            logConnectedServer(conn);
             return conn;
         } catch (Exception e) {
             System.out.println("[DB] ERROR | branch=" + (branch != null ? branch : "DEFAULT") + " | " + e.getMessage());
-            JOptionPane.showMessageDialog(null, "Không thể kết nối đến cơ sở dữ liệu !", "Lỗi", JOptionPane.ERROR_MESSAGE);
             return null;
         }
     }
@@ -109,7 +101,7 @@ public class JDBCUtil {
             cfg.setDriverClassName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
             cfg.setUsername(DB_USER);
             cfg.setPassword(DB_PASS);
-            cfg.setMaximumPoolSize(40);
+            cfg.setMaximumPoolSize(100);
             cfg.setMinimumIdle(2);
             cfg.setConnectionTimeout(30000);
             cfg.setIdleTimeout(600000);
@@ -118,22 +110,6 @@ public class JDBCUtil {
             HikariDataSource ds = new HikariDataSource(cfg);
             POOLS.put(key, ds);
             return ds;
-        }
-    }
-
-    private static void logConnectedServer(Connection connection) {
-        if (connection == null) {
-            return;
-        }
-        String sql = "SELECT @@SERVERNAME AS SERVER_NAME, DB_NAME() AS DB_NAME";
-        try (PreparedStatement pst = connection.prepareStatement(sql); ResultSet rs = pst.executeQuery()) {
-            if (rs.next()) {
-                String serverName = rs.getString("SERVER_NAME");
-                String databaseName = rs.getString("DB_NAME");
-                System.out.println("[DB] ACTIVE | server=" + serverName + " | db=" + databaseName);
-            }
-        } catch (Exception e) {
-            System.out.println("[DB] WARN | cannot read server identity | " + e.getMessage());
         }
     }
 
@@ -165,11 +141,9 @@ public class JDBCUtil {
         try {
             if (c != null) {
                 c.close();
-                System.out.println("[DB] CLOSE | thread=" + Thread.currentThread().getName());
             }
         } catch (Exception e) {
             System.out.println("[DB] WARN | close failed | " + e.getMessage());
-            e.printStackTrace();
         }
     }
 
@@ -180,10 +154,8 @@ public class JDBCUtil {
                     HikariDataSource ds = e.getValue();
                     if (ds != null && !ds.isClosed()) {
                         ds.close();
-                        System.out.println("[DB] POOL CLOSED | " + e.getKey());
                     }
                 } catch (Exception ex) {
-                    System.out.println("[DB] WARN | failed to close pool " + e.getKey() + " | " + ex.getMessage());
                 }
             }
             POOLS.clear();

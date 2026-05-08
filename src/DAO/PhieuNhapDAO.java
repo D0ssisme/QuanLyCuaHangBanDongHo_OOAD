@@ -102,28 +102,19 @@ public class PhieuNhapDAO implements DAOinterface<PhieuNhapDTO> {
 
     @Override
     public ArrayList<PhieuNhapDTO> selectAll() {
-        ArrayList<PhieuNhapDTO> result = new ArrayList<>();
-        try {
-            Connection con = (Connection) JDBCUtil.getConnection();
-            String sql = "SELECT MPN, TG, MNCC, MNV, TIEN, TT, MCN FROM PHIEUNHAP ORDER BY MPN DESC";
-            PreparedStatement pst = (PreparedStatement) con.prepareStatement(sql);
-            ResultSet rs = (ResultSet) pst.executeQuery();
-            while (rs.next()) {
-                int MPN = rs.getInt("MPN");
-                Timestamp TG = rs.getTimestamp("TG");
-                int MNCC = rs.getInt("MNCC");
-                int MNV = rs.getInt("MNV");
-                long TIENN = rs.getLong("TIEN");
-                int TT = rs.getInt("TT");
-                String MCN = rs.getString("MCN");
-                PhieuNhapDTO phieunhap = new PhieuNhapDTO(MNCC, MPN, MNV, TG, TIENN, TT, MCN);
-                result.add(phieunhap);
-            }
-            JDBCUtil.closeConnection(con);
-        } catch (SQLException e) {
-            Logger.getLogger(PhieuNhapDAO.class.getName()).log(Level.SEVERE, "Lỗi load PHIEUNHAP", e);
+        return selectPhieuNhapByMCN(JDBCUtil.getCurrentMcn());
+    }
+
+    private String buildPhieuNhapSource(String mcn) {
+        String normalized = mcn == null ? "" : mcn.trim().toUpperCase();
+        if (normalized.isBlank() || "ALL".equalsIgnoreCase(normalized)) {
+            return null;
         }
-        return result;
+        String currentMcn = JDBCUtil.getCurrentMcn();
+        if (currentMcn != null && currentMcn.trim().equalsIgnoreCase(normalized)) {
+            return "PHIEUNHAP";
+        }
+        return "[" + normalized + "].quanlycuahangdongho.dbo.PHIEUNHAP";
     }
 
     @Override
@@ -280,11 +271,20 @@ public class PhieuNhapDAO implements DAOinterface<PhieuNhapDTO> {
 
     public ArrayList<PhieuNhapDTO> selectPhieuNhapByMCN(String mcn) {
         ArrayList<PhieuNhapDTO> result = new ArrayList<>();
+        String normalizedMcn = mcn == null ? "" : mcn.trim().toUpperCase();
+        if (normalizedMcn.isBlank() || "ALL".equalsIgnoreCase(normalizedMcn)) {
+            for (String branch : new String[]{"CN1", "CN2", "CN3"}) {
+                result.addAll(selectPhieuNhapByMCN(branch));
+            }
+            return result;
+        }
+
         try {
             Connection con = JDBCUtil.getConnection();
-            String sql = "SELECT MPN, TG, MNCC, MNV, TIEN, TT, MCN FROM PHIEUNHAP WHERE MCN = ? ORDER BY MPN DESC";
+            String sourceTable = buildPhieuNhapSource(normalizedMcn);
+            String sql = "SELECT MPN, TG, MNCC, MNV, TIEN, TT, MCN FROM " + sourceTable + " WHERE MCN = ? ORDER BY MPN DESC";
             PreparedStatement pst = con.prepareStatement(sql);
-            pst.setString(1, mcn);
+            pst.setString(1, normalizedMcn);
             ResultSet rs = pst.executeQuery();
             while (rs.next()) {
                 int MPN = rs.getInt("MPN");
@@ -299,7 +299,7 @@ public class PhieuNhapDAO implements DAOinterface<PhieuNhapDTO> {
             }
             JDBCUtil.closeConnection(con);
         } catch (SQLException ex) {
-            Logger.getLogger(PhieuNhapDAO.class.getName()).log(Level.SEVERE, "Lỗi load PHIEUNHAP theo MCN: " + mcn, ex);
+            Logger.getLogger(PhieuNhapDAO.class.getName()).log(Level.SEVERE, "Lỗi load PHIEUNHAP theo MCN: " + normalizedMcn, ex);
         }
         return result;
     }

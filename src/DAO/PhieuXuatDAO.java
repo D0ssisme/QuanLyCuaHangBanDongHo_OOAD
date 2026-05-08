@@ -28,7 +28,7 @@ public class PhieuXuatDAO implements DAOinterface<PhieuXuatDTO> {
         int result = 0;
         try {
             Connection con = (Connection) JDBCUtil.getConnection();
-            String sql = "INSERT INTO PHIEUXUAT (MNV, MKH, TIEN, TG, TT, DIEMTICHLUY) VALUES (?,?,?,?,?,?)";
+            String sql = "INSERT INTO PHIEUXUAT (MNV, MKH, TIEN, TG, TT, DIEMTICHLUY, MCN) VALUES (?,?,?,?,?,?,?)";
             PreparedStatement pst = con.prepareStatement(sql);
             pst.setInt(1, t.getMNV());
             pst.setInt(2, t.getMKH());
@@ -36,6 +36,7 @@ public class PhieuXuatDAO implements DAOinterface<PhieuXuatDTO> {
             pst.setTimestamp(4, t.getTG());
             pst.setInt(5, t.getTT());
             pst.setInt(6, t.getDIEMTICHLUY());
+            pst.setString(7, t.getMCN());
             result = pst.executeUpdate();
             JDBCUtil.closeConnection(con);
         } catch (SQLException ex) {
@@ -49,7 +50,7 @@ public class PhieuXuatDAO implements DAOinterface<PhieuXuatDTO> {
         int generatedId = -1;
         try {
             Connection con = (Connection) JDBCUtil.getConnection();
-            String sql = "INSERT INTO PHIEUXUAT (MNV, MKH, TIEN, TG, TT, DIEMTICHLUY) VALUES (?,?,?,?,?,?)";
+            String sql = "INSERT INTO PHIEUXUAT (MNV, MKH, TIEN, TG, TT, DIEMTICHLUY, MCN) VALUES (?,?,?,?,?,?,?)";
             PreparedStatement pst = con.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
             pst.setInt(1, t.getMNV());
             pst.setInt(2, t.getMKH());
@@ -57,6 +58,7 @@ public class PhieuXuatDAO implements DAOinterface<PhieuXuatDTO> {
             pst.setTimestamp(4, t.getTG());
             pst.setInt(5, t.getTT());
             pst.setInt(6, t.getDIEMTICHLUY());
+            pst.setString(7, t.getMCN());
             
             int affectedRows = pst.executeUpdate();
             
@@ -80,7 +82,7 @@ public class PhieuXuatDAO implements DAOinterface<PhieuXuatDTO> {
         int result = 0 ;
         try {
             Connection con = (Connection) JDBCUtil.getConnection();
-            String sql = "UPDATE PHIEUXUAT SET MNV=?, MKH=?, TIEN=?, TG=?, TT=?, DIEMTICHLUY = ? WHERE MPX=?";
+            String sql = "UPDATE PHIEUXUAT SET MNV=?, MKH=?, TIEN=?, TG=?, TT=?, DIEMTICHLUY = ?, MCN = ? WHERE MPX=?";
             PreparedStatement pst = (PreparedStatement) con.prepareStatement(sql);
             pst.setInt(1, t.getMNV());
             pst.setInt(2, t.getMKH());
@@ -88,6 +90,8 @@ public class PhieuXuatDAO implements DAOinterface<PhieuXuatDTO> {
             pst.setTimestamp(4, t.getTG());
             pst.setInt(5, t.getTT());
             pst.setInt(6, t.getDIEMTICHLUY());
+            pst.setString(7, t.getMCN());
+            pst.setInt(8, t.getMP());
             result = pst.executeUpdate();
             JDBCUtil.closeConnection(con);
         } catch (SQLException ex) {

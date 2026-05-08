@@ -227,8 +227,23 @@ public class NhanVienDialog extends JDialog {
                             java.sql.Date sqlDate = new java.sql.Date(birthDay.getTime());
                             int mcv = cvbus.getByIndex(chucvu.getSelectedIndex()).getMCV();
                             String mcn = chinhanh.getSelectedItem().toString();
+
+                            String oldEmployeeMcn = nhanVien != null ? nhanVien.getMCN() : null;
+
+                            if (oldEmployeeMcn != null && mcn != null && !mcn.equals(oldEmployeeMcn)) {
+                                int confirm = JOptionPane.showConfirmDialog(
+                                        NhanVienDialog.this,
+                                        "Bạn đang chuyển nhân viên từ " + oldEmployeeMcn + " sang " + mcn + ".\nThao tác này không thể hoàn lại. Bạn có chắc chắn muốn tiếp tục không?",
+                                        "Cảnh báo chuyển chi nhánh",
+                                        JOptionPane.YES_NO_OPTION,
+                                        JOptionPane.WARNING_MESSAGE);
+                                if (confirm != JOptionPane.YES_OPTION) {
+                                    return;
+                                }
+                            }
+
                             NhanVienDTO nV = new NhanVienDTO(nhanVien.getMNV(), txtName, txt_gender, txtSdt, sqlDate, 1, txtEmail, mcv,mcn);
-                            NhanVienDAO.getInstance().update(nV);
+                            nv.updateNhanVien(nV, oldEmployeeMcn);
                             System.out.println("Index:" + nv.getIndex());
                             nv.listNv.set(nv.getIndex(), nV);
                             nv.loadTable();

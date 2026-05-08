@@ -1,10 +1,8 @@
 -- SQL Server version of QuanLyCuaHangDongHo database
 -- Converted from MySQL
 
-IF EXISTS (SELECT * FROM sys.databases WHERE name = 'QuanLyCuaHangDongHo')
-    DROP DATABASE QuanLyCuaHangDongHo;
-
-CREATE DATABASE QuanLyCuaHangDongHo;
+IF DB_ID(N'QuanLyCuaHangDongHo') IS NULL
+    CREATE DATABASE QuanLyCuaHangDongHo;
 GO
 
 USE QuanLyCuaHangDongHo;

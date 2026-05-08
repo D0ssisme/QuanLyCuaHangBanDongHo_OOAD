@@ -7,6 +7,7 @@ import java.awt.FlowLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.function.Supplier;
 
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
@@ -119,8 +120,15 @@ public class MenuTaskbar extends JPanel {
     
         this.nhomQuyenDTO = NhomQuyenDAO.getInstance().selectById(Integer.toString(tk.getMNQ()));
         
-        this.nhanVienDTO = NhanVienDAO.getInstance().selectById(Integer.toString(tk.getMNV()));
-        System.out.println("✅ LOGIN: MNV=" + tk.getMNV() + " | nhanVienDTO=" + (nhanVienDTO != null ? "FOUND" : "NOT FOUND"));
+        // Try to load employee record from central DB first (to get MCN). Fall back to local if unavailable.
+        NhanVienDTO centralNv = NhanVienDAO.getInstance().selectByIdFromCentral(Integer.toString(tk.getMNV()));
+        if (centralNv != null) {
+            this.nhanVienDTO = centralNv;
+            System.out.println("✅ LOGIN (central): MNV=" + tk.getMNV() + " | MCN=" + centralNv.getMCN());
+        } else {
+            this.nhanVienDTO = NhanVienDAO.getInstance().selectById(Integer.toString(tk.getMNV()));
+            System.out.println("✅ LOGIN (local): MNV=" + tk.getMNV() + " | nhanVienDTO=" + (nhanVienDTO != null ? "FOUND" : "NOT FOUND"));
+        }
         
         listQuyen = ChiTietQuyenDAO.getInstance().selectAll(Integer.toString(tk.getMNQ()));
         initComponent();
@@ -277,134 +285,118 @@ public class MenuTaskbar extends JPanel {
 
     private TongQuan getTongQuanPanel() {
         if (tongQuan == null) {
-            System.out.println("[MENU] 📊 Dang load trang: TONG QUAN...");
+            logPageLoadStart("TONG QUAN");
             tongQuan = new TongQuan(user);
-            System.out.println("[MENU] ✅ Trang TONG QUAN tai xong");
-        } else {
-            System.out.println("[MENU] 📊 Hien thi trang TONG QUAN (cache)");
+            logPageLoadDone("TONG QUAN");
         }
         return tongQuan;
     }
 
     private SanPham getSanPhamPanel() {
         if (sanPham == null) {
-            System.out.println("[MENU] 🛍️  Dang load trang: SAN PHAM...");
+            logPageLoadStart("SAN PHAM");
             sanPham = new SanPham(main, nhanVienDTO);
-            System.out.println("[MENU] ✅ Trang SAN PHAM tai xong");
-        } else {
-            System.out.println("[MENU] 🛍️  Hien thi trang SAN PHAM (cache)");
+            logPageLoadDone("SAN PHAM");
         }
         return sanPham;
     }
 
     private MaKhuyenMai getMaKhuyenMaiPanel() {
         if (maKhuyenMai == null) {
-            System.out.println("[MENU] 🏷️  Dang load trang: MA KHUYEN MAI...");
+            logPageLoadStart("MA KHUYEN MAI");
             maKhuyenMai = new MaKhuyenMai(main, nhanVienDTO);
-            System.out.println("[MENU] ✅ Trang MA KHUYEN MAI tai xong");
-        } else {
-            System.out.println("[MENU] 🏷️  Hien thi trang MA KHUYEN MAI (cache)");
+            logPageLoadDone("MA KHUYEN MAI");
         }
         return maKhuyenMai;
     }
 
     private NhanVien getNhanVienPanel() {
         if (nhanVien == null) {
-            System.out.println("[MENU] 👥 Dang load trang: NHAN VIEN...");
+            logPageLoadStart("NHAN VIEN");
             nhanVien = new NhanVien(main, nhanVienDTO);
-            System.out.println("[MENU] ✅ Trang NHAN VIEN tai xong");
-        } else {
-            System.out.println("[MENU] 👥 Hien thi trang NHAN VIEN (cache)");
+            logPageLoadDone("NHAN VIEN");
         }
         return nhanVien;
     }
 
     private ChucVu getChucVuPanel() {
         if (chucVu == null) {
-            System.out.println("[MENU] 📋 Dang load trang: CHUC VU...");
+            logPageLoadStart("CHUC VU");
             chucVu = new ChucVu(main);
-            System.out.println("[MENU] ✅ Trang CHUC VU tai xong");
-        } else {
-            System.out.println("[MENU] 📋 Hien thi trang CHUC VU (cache)");
+            logPageLoadDone("CHUC VU");
         }
         return chucVu;
     }
 
     private KhachHang getKhachHangPanel() {
         if (khachHang == null) {
-            System.out.println("[MENU] 🧑‍🤝‍🧑 Dang load trang: KHACH HANG...");
+            logPageLoadStart("KHACH HANG");
             khachHang = new KhachHang(main);
-            System.out.println("[MENU] ✅ Trang KHACH HANG tai xong");
-        } else {
-            System.out.println("[MENU] 🧑‍🤝‍🧑 Hien thi trang KHACH HANG (cache)");
+            logPageLoadDone("KHACH HANG");
         }
         return khachHang;
     }
 
     private NhaCungCap getNhaCungCapPanel() {
         if (nhacungcap == null) {
-            System.out.println("[MENU] 🏢 Dang load trang: NHA CUNG CAP...");
+            logPageLoadStart("NHA CUNG CAP");
             nhacungcap = new NhaCungCap(main);
-            System.out.println("[MENU] ✅ Trang NHA CUNG CAP tai xong");
-        } else {
-            System.out.println("[MENU] 🏢 Hien thi trang NHA CUNG CAP (cache)");
+            logPageLoadDone("NHA CUNG CAP");
         }
         return nhacungcap;
     }
 
     private PhieuXuat getPhieuXuatPanel() {
         if (phieuXuat == null) {
-            System.out.println("[MENU] 📤 Dang load trang: PHIEU XUAT...");
+            logPageLoadStart("PHIEU XUAT");
             phieuXuat = new PhieuXuat(main, nhanVienDTO);
-            System.out.println("[MENU] ✅ Trang PHIEU XUAT tai xong");
-        } else {
-            System.out.println("[MENU] 📤 Hien thi trang PHIEU XUAT (cache)");
+            logPageLoadDone("PHIEU XUAT");
         }
         return phieuXuat;
     }
 
     private PhieuNhap getPhieuNhapPanel() {
         if (phieuNhap == null) {
-            System.out.println("[MENU] 📥 Dang load trang: PHIEU NHAP...");
+            logPageLoadStart("PHIEU NHAP");
             phieuNhap = new PhieuNhap(main, nhanVienDTO);
-            System.out.println("[MENU] ✅ Trang PHIEU NHAP tai xong");
-        } else {
-            System.out.println("[MENU] 📥 Hien thi trang PHIEU NHAP (cache)");
+            logPageLoadDone("PHIEU NHAP");
         }
         return phieuNhap;
     }
 
     private PhanQuyen getPhanQuyenPanel() {
         if (phanQuyen == null) {
-            System.out.println("[MENU] 🔐 Dang load trang: PHAN QUYEN...");
+            logPageLoadStart("PHAN QUYEN");
             phanQuyen = new PhanQuyen(main);
-            System.out.println("[MENU] ✅ Trang PHAN QUYEN tai xong");
-        } else {
-            System.out.println("[MENU] 🔐 Hien thi trang PHAN QUYEN (cache)");
+            logPageLoadDone("PHAN QUYEN");
         }
         return phanQuyen;
     }
 
     private TaiKhoan getTaiKhoanPanel() {
         if (taiKhoan == null) {
-            System.out.println("[MENU] 🔑 Dang load trang: TAI KHOAN...");
+            logPageLoadStart("TAI KHOAN");
             taiKhoan = new TaiKhoan(main);
-            System.out.println("[MENU] ✅ Trang TAI KHOAN tai xong");
-        } else {
-            System.out.println("[MENU] 🔑 Hien thi trang TAI KHOAN (cache)");
+            logPageLoadDone("TAI KHOAN");
         }
         return taiKhoan;
     }
 
     private ThongKe getThongKePanel() {
         if (thongKe == null) {
-            System.out.println("[MENU] 📈 Dang load trang: THONG KE...");
+            logPageLoadStart("THONG KE");
             thongKe = new ThongKe();  // 🔥 No parameters
-            System.out.println("[MENU] ✅ Trang THONG KE tai xong");
-        } else {
-            System.out.println("[MENU] 📈 Hien thi trang THONG KE (cache)");
+            logPageLoadDone("THONG KE");
         }
         return thongKe;
+    }
+
+    private void logPageLoadStart(String pageName) {
+        System.out.println("[MENU] Dang load trang: " + pageName + "...");
+    }
+
+    private void logPageLoadDone(String pageName) {
+        System.out.println("[MENU] Hoan thanh load trang: " + pageName);
     }
 
   public boolean checkRole(String machucnang) {
@@ -413,12 +405,8 @@ public class MenuTaskbar extends JPanel {
 
 
   public void in4(JPanel info) {
-    // DEBUG
-    System.out.println("DEBUG MCN = " + mcn);
-    
     // Check null nhanVienDTO
     if (nhanVienDTO == null) {
-        System.err.println("❌ ERROR: nhanVienDTO is null in MenuTaskbar.in4()");
         JLabel lblError = new JLabel("Lỗi: Không tìm thấy dữ liệu nhân viên");
         info.add(lblError, BorderLayout.CENTER);
         return;
