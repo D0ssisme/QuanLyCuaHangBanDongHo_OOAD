@@ -136,29 +136,7 @@ public class PhieuXuatDAO implements DAOinterface<PhieuXuatDTO> {
 
     @Override
     public ArrayList<PhieuXuatDTO> selectAll() {
-        ArrayList<PhieuXuatDTO> result = new ArrayList<>();
-        try {
-            Connection con = (Connection) JDBCUtil.getConnection();
-            String sql = "SELECT * FROM PHIEUXUAT ORDER BY MPX ASC";
-            PreparedStatement pst = (PreparedStatement) con.prepareStatement(sql);
-            ResultSet rs = (ResultSet) pst.executeQuery();
-            while(rs.next()){
-                int MP = rs.getInt("MPX");
-                Timestamp TG = rs.getTimestamp("TG");
-                int MKH = rs.getInt("MKH");
-                int MNV = rs.getInt("MNV");
-                long TIEN = rs.getLong("TIEN");
-                int TT = rs.getInt("TT");
-                int DIEMTICHLUY = rs.getInt("DIEMTICHLUY");
-                String LYDOHUY = rs.getString("LYDOHUY");
-                PhieuXuatDTO PHIEUXUAT = new PhieuXuatDTO(MKH, MP, MNV, TG, TIEN, TT, DIEMTICHLUY, LYDOHUY);
-                result.add(PHIEUXUAT);
-            }
-            JDBCUtil.closeConnection(con);
-        } catch (SQLException e) {
-            System.out.println(e);
-        }
-        return result;
+        return selectPhieuXuatByMCN(JDBCUtil.getCurrentMcn());
     }
 
     @Override
@@ -292,14 +270,20 @@ public class PhieuXuatDAO implements DAOinterface<PhieuXuatDTO> {
 
     public ArrayList<PhieuXuatDTO> selectPhieuXuatByMCN(String mcn) {
         ArrayList<PhieuXuatDTO> result = new ArrayList<>();
+        String normalizedMcn = mcn == null ? "" : mcn.trim().toUpperCase();
+        if (normalizedMcn.isBlank() || "ALL".equalsIgnoreCase(normalizedMcn)) {
+            for (String branch : new String[]{"CN1", "CN2", "CN3"}) {
+                result.addAll(selectPhieuXuatByMCN(branch));
+            }
+            return result;
+        }
+
         try {
             Connection con = (Connection) JDBCUtil.getConnection();
-            String sql = "SELECT PX.* FROM PHIEUXUAT PX " +
-                         "JOIN NHANVIEN NV ON PX.MNV = NV.MNV " +
-                         "WHERE NV.MCN = ? " +
-                         "ORDER BY PX.MPX ASC";
+            String sourceTable = buildPhieuXuatSource(normalizedMcn);
+            String sql = "SELECT MPX, TG, MKH, MNV, TIEN, TT, DIEMTICHLUY, LYDOHUY, MCN FROM " + sourceTable + " WHERE MCN = ? ORDER BY MPX ASC";
             PreparedStatement pst = (PreparedStatement) con.prepareStatement(sql);
-            pst.setString(1, mcn);
+            pst.setString(1, normalizedMcn);
             ResultSet rs = (ResultSet) pst.executeQuery();
             while(rs.next()){
                 int MP = rs.getInt("MPX");
@@ -315,9 +299,21 @@ public class PhieuXuatDAO implements DAOinterface<PhieuXuatDTO> {
             }
             JDBCUtil.closeConnection(con);
         } catch (SQLException e) {
-            Logger.getLogger(PhieuXuatDAO.class.getName()).log(Level.SEVERE, "Lỗi load PHIEUXUAT theo MCN: " + mcn, e);
+            Logger.getLogger(PhieuXuatDAO.class.getName()).log(Level.SEVERE, "Lỗi load PHIEUXUAT theo MCN: " + normalizedMcn, e);
         }
         return result;
+    }
+
+    private String buildPhieuXuatSource(String mcn) {
+        String normalized = mcn == null ? "" : mcn.trim().toUpperCase();
+        if (normalized.isBlank() || "ALL".equalsIgnoreCase(normalized)) {
+            return null;
+        }
+        String currentMcn = JDBCUtil.getCurrentMcn();
+        if (currentMcn != null && currentMcn.trim().equalsIgnoreCase(normalized)) {
+            return "PHIEUXUAT";
+        }
+        return "[" + normalized + "].quanlycuahangdongho.dbo.PHIEUXUAT";
     }
 
     public boolean checkSLPx(int maphieu) {
