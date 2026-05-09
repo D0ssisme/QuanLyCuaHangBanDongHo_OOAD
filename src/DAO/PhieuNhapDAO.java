@@ -20,7 +20,7 @@ public class PhieuNhapDAO implements DAOinterface<PhieuNhapDTO> {
 
     public static PhieuNhapDAO getInstance() {
         return new PhieuNhapDAO();
-    }
+    }       
 
     @Override
     public int insert(PhieuNhapDTO t) {

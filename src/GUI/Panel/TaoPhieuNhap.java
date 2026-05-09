@@ -61,7 +61,7 @@ public final class TaoPhieuNhap extends JPanel implements ItemListener, ActionLi
     DefaultTableModel tblModel, tblModelSP; //table co san 
     ButtonCustom btnAddSp, btnEditSP, btnDelete, btnNhapHang; //, btnImport
     InputForm txtMaphieu, txtNhanVien, txtMaSp, txtTenSp, txtDongia, txtMaISBN, txtSoLuongSPnhap ;
-    SelectForm cbxChiNhanh, cbxNhaCungCap; //, cbxDanhMuc
+    SelectForm cbxNhaCungCap; //, cbxDanhMuc
     JTextField txtTimKiem;
     JLabel  lbltongtien;
 
@@ -318,11 +318,9 @@ public final class TaoPhieuNhap extends JPanel implements ItemListener, ActionLi
         txtNhanVien = new InputForm("Nhân viên nhập");
         txtNhanVien.setText(nvDto.getHOTEN());
         txtNhanVien.setEditable(false);
-        cbxChiNhanh = new SelectForm("Chi nhánh", new String[]{"Tất cả chi nhánh", "Chi nhánh 1", "Chi nhánh 2", "Chi nhánh 3"});
         cbxNhaCungCap = new SelectForm("Nhà cung cấp", nccBus.getArrTenNhaCungCap());
         right_top.add(txtMaphieu);
         right_top.add(txtNhanVien);
-        right_top.add(cbxChiNhanh);
         right_top.add(cbxNhaCungCap);
 
         right_center = new JPanel();

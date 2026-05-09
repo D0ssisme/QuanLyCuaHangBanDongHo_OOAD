@@ -71,6 +71,7 @@ public final class PhieuXuat extends JPanel implements ActionListener, KeyListen
     TaoPhieuXuat taoPhieuXuat;
     NhanVienDTO nv;
     String mcn;
+    private boolean suppressBranchEvents;
 
     Color BackgroundColor = new Color(248, 249, 250);
 
@@ -85,6 +86,9 @@ public final class PhieuXuat extends JPanel implements ActionListener, KeyListen
        this.nv=nv;
         initComponent();
         this.mcn=nv.getMCN();
+        suppressBranchEvents = true;
+        cbxChiNhanh.setSelectedItem(branchLabelForMcn(nv.getMCN()));
+        suppressBranchEvents = false;
         this.listPhieuXuat = pxBUS.getAllByBranch(nv.getMCN());
         loadDataTalbe(this.listPhieuXuat);
     }
@@ -124,6 +128,7 @@ public final class PhieuXuat extends JPanel implements ActionListener, KeyListen
         branchPanel.setBorder(new EmptyBorder(0, 5, 0, 5));
         cbxChiNhanh = new JComboBox<>(new String[]{"Tất cả chi nhánh", "Chi nhánh 1", "Chi nhánh 2", "Chi nhánh 3"});
         cbxChiNhanh.setPreferredSize(new Dimension(200, 35));
+        cbxChiNhanh.addItemListener(this);
         branchPanel.add(cbxChiNhanh, BorderLayout.CENTER);
         functionBar.add(branchPanel, BorderLayout.CENTER);
 
@@ -292,6 +297,62 @@ public final class PhieuXuat extends JPanel implements ActionListener, KeyListen
         }
     }
 
+    private String branchLabelToMcn(String branchLabel) {
+        if (branchLabel == null) {
+            return "ALL";
+        }
+        return switch (branchLabel) {
+            case "Chi nhánh 1" -> "CN1";
+            case "Chi nhánh 2" -> "CN2";
+            case "Chi nhánh 3" -> "CN3";
+            case "Tất cả chi nhánh" -> "ALL";
+            default -> "ALL";
+        };
+    }
+
+    private String branchLabelForMcn(String mcn) {
+        if ("CN1".equalsIgnoreCase(mcn)) {
+            return "Chi nhánh 1";
+        }
+        if ("CN2".equalsIgnoreCase(mcn)) {
+            return "Chi nhánh 2";
+        }
+        if ("CN3".equalsIgnoreCase(mcn)) {
+            return "Chi nhánh 3";
+        }
+        return "Tất cả chi nhánh";
+    }
+
+    private void refreshNhanVienFilter(String branchLabel) {
+        String[] listNv = nvBUS.getAllByBranchLabel(branchLabel).stream()
+                .map(DTO.NhanVienDTO::getHOTEN)
+                .toArray(String[]::new);
+        listNv = Stream.concat(Stream.of("Tất cả"), Arrays.stream(listNv)).toArray(String[]::new);
+        cbxNhanVien.setArr(listNv);
+    }
+
+    private void reloadByBranch(String branchLabel, boolean reapplyFilters) {
+        String mcnSelected = branchLabelToMcn(branchLabel);
+        this.mcn = mcnSelected;
+        suppressBranchEvents = true;
+        refreshNhanVienFilter(branchLabel);
+        cbxKhachHang.setSelectedIndex(0);
+        cbxNhanVien.setSelectedIndex(0);
+        suppressBranchEvents = false;
+
+        this.listPhieuXuat = pxBUS.getAllByBranch(mcnSelected);
+
+        if (reapplyFilters) {
+            try {
+                Fillter();
+            } catch (ParseException ex) {
+                Logger.getLogger(PhieuXuat.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+            loadDataTalbe(this.listPhieuXuat);
+        }
+    }
+
     public void loadDataTalbe(ArrayList<PhieuXuatDTO> listphieuxuat) {
         tblModel.setRowCount(0);
         int size = listphieuxuat.size();
@@ -313,7 +374,7 @@ public final class PhieuXuat extends JPanel implements ActionListener, KeyListen
                 i + 1,
                 listphieuxuat.get(i).getMP(),
                 khachHangBUS.getTenKhachHang(listphieuxuat.get(i).getMKH()),
-                nvBUS.getNameById(listphieuxuat.get(i).getMNV()),
+                nvBUS.getNameById(listphieuxuat.get(i).getMNV(), listphieuxuat.get(i).getMCN()),
                 Formater.FormatTime(listphieuxuat.get(i).getTG()),
                 listphieuxuat.get(i).getDIEMTICHLUY(),
                 Formater.FormatVND(listphieuxuat.get(i).getTIEN()), trangthaiString});
@@ -332,9 +393,10 @@ public final class PhieuXuat extends JPanel implements ActionListener, KeyListen
             Date time_end = dateEnd.getDate() != null ? dateEnd.getDate() : new Date(System.currentTimeMillis());
             String min_price = moneyMin.getText();
             String max_price = moneyMax.getText();
+            String branchFilter = branchLabelToMcn((String) cbxChiNhanh.getSelectedItem());
             
-            // Lọc theo các tiêu chí bộ lọc bên trái (chỉ của chi nhánh nhân viên)
-            this.listPhieuXuat = pxBUS.fillerPhieuXuat(0, "", makh, manv, time_start, time_end, min_price, max_price, nv.getMCN());
+            // Lọc theo các tiêu chí bộ lọc bên trái + chi nhánh đang chọn
+            this.listPhieuXuat = pxBUS.fillerPhieuXuat(0, "", makh, manv, time_start, time_end, min_price, max_price, branchFilter);
             
             // Sau đó lọc theo tìm kiếm văn bản
             String searchText = search.txtSearchForm.getText().toLowerCase().trim();
@@ -348,7 +410,7 @@ public final class PhieuXuat extends JPanel implements ActionListener, KeyListen
                         case "Tất cả" -> {
                             match = String.valueOf(px.getMP()).toLowerCase().contains(searchText)
                                 || khachHangBUS.getTenKhachHang(px.getMKH()).toLowerCase().contains(searchText)
-                                || nvBUS.getNameById(px.getMNV()).toLowerCase().contains(searchText);
+                                || nvBUS.getNameById(px.getMNV(), px.getMCN()).toLowerCase().contains(searchText);
                         }
                         case "Mã phiếu" -> {
                             match = String.valueOf(px.getMP()).toLowerCase().contains(searchText);
@@ -357,7 +419,7 @@ public final class PhieuXuat extends JPanel implements ActionListener, KeyListen
                             match = khachHangBUS.getTenKhachHang(px.getMKH()).toLowerCase().contains(searchText);
                         }
                         case "Nhân viên xuất" -> {
-                            match = nvBUS.getNameById(px.getMNV()).toLowerCase().contains(searchText);
+                            match = nvBUS.getNameById(px.getMNV(), px.getMCN()).toLowerCase().contains(searchText);
                         }
                     }
                     if (match) {
@@ -372,6 +434,9 @@ public final class PhieuXuat extends JPanel implements ActionListener, KeyListen
     }
 
     public void resetForm() {
+        suppressBranchEvents = true;
+        cbxChiNhanh.setSelectedItem(branchLabelForMcn(nv.getMCN()));
+        suppressBranchEvents = false;
         cbxKhachHang.setSelectedIndex(0);
         cbxNhanVien.setSelectedIndex(0);
         search.cbxChoose.setSelectedIndex(0);
@@ -438,6 +503,13 @@ public final class PhieuXuat extends JPanel implements ActionListener, KeyListen
     @Override
     public void itemStateChanged(ItemEvent e) {
         try {
+            if (suppressBranchEvents) {
+                return;
+            }
+            if (e.getSource() == cbxChiNhanh && e.getStateChange() == ItemEvent.SELECTED) {
+                reloadByBranch((String) cbxChiNhanh.getSelectedItem(), true);
+                return;
+            }
             Fillter();
         } catch (ParseException ex) {
             Logger.getLogger(PhieuXuat.class.getName()).log(Level.SEVERE, null, ex);
