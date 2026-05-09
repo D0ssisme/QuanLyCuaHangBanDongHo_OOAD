@@ -2,9 +2,12 @@ package GUI.Panel.ThongKe;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Insets;
 import java.awt.Dimension;
-import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
+import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -14,14 +17,18 @@ import javax.swing.border.EmptyBorder;
 import GUI.Component.PanelBorderRadius;
 
 import BUS.ThongKeBUS;
+import config.JDBCUtil;
 
 public final class ThongKe extends JPanel {
 
     JTabbedPane tabbedPane;
     PanelBorderRadius functionBar;
     JComboBox<String> cbxChiNhanh;
-    JPanel tongquan, nhacungcap, khachhang, doanhthu;
-    ThongKeTonKho nhapxuat;
+    JButton btnRefresh;
+    ThongKeNhanVienBanChay nhanVienBanChay;
+    ThongKeDoanhThuChiNhanh doanhThuChiNhanh;
+    ThongKeTopSanPham topSanPham;
+    ThongKeNhanVienTotNhat nhanVienTotNhat;
     Color BackgroundColor = new Color(248, 249, 250);
     ThongKeBUS thongkeBUS = new ThongKeBUS();
 
@@ -50,22 +57,72 @@ public final class ThongKe extends JPanel {
         branchPanel.add(cbxChiNhanh, BorderLayout.CENTER);
         functionBar.add(branchPanel, BorderLayout.CENTER);
 
+        btnRefresh = new JButton("Làm mới");
+        btnRefresh.setPreferredSize(new Dimension(110, 35));
+        btnRefresh.setMinimumSize(new Dimension(110, 35));
+        btnRefresh.setMaximumSize(new Dimension(110, 35));
+        btnRefresh.setMargin(new Insets(0, 12, 0, 12));
+        btnRefresh.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                onRefreshClicked();
+            }
+        });
+
+        JPanel refreshPanel = new JPanel(new BorderLayout());
+        refreshPanel.setBackground(functionBar.getBackground());
+        refreshPanel.setBorder(new EmptyBorder(0, 5, 0, 5));
+        refreshPanel.add(btnRefresh, BorderLayout.CENTER);
+        functionBar.add(refreshPanel, BorderLayout.EAST);
+
         this.add(functionBar, BorderLayout.NORTH);
 
-        tongquan = new ThongKeTongQuan(thongkeBUS);
-        nhapxuat = new ThongKeTonKho(thongkeBUS);
-        khachhang = new ThongKeKhachHang(thongkeBUS);
-        nhacungcap = new ThongKeNhaCungCap(thongkeBUS);
-        doanhthu = new ThongKeDoanhThu(thongkeBUS);
+        nhanVienBanChay = new ThongKeNhanVienBanChay(thongkeBUS);
+        doanhThuChiNhanh = new ThongKeDoanhThuChiNhanh(thongkeBUS);
+        topSanPham = new ThongKeTopSanPham(thongkeBUS);
+        nhanVienTotNhat = new ThongKeNhanVienTotNhat(thongkeBUS);
 
         tabbedPane = new JTabbedPane();
         tabbedPane.setOpaque(false);
-        tabbedPane.addTab("Tổng quan", tongquan);
-        tabbedPane.addTab("Tồn kho", nhapxuat);
-        tabbedPane.addTab("Doanh thu", doanhthu);
-        tabbedPane.addTab("Nhà cung cấp", nhacungcap);
-        tabbedPane.addTab("Khách hàng", khachhang);
+        tabbedPane.addTab("Nhân viên bán chạy", nhanVienBanChay);
+        tabbedPane.addTab("Doanh thu", doanhThuChiNhanh);
+        tabbedPane.addTab("Top sản phẩm", topSanPham);
+        tabbedPane.addTab("Nhân viên tốt nhất", nhanVienTotNhat);
 
         this.add(tabbedPane, BorderLayout.CENTER);
+
+        String currentBranchLabel = resolveCurrentBranchLabel();
+        cbxChiNhanh.setSelectedItem(currentBranchLabel);
+        cbxChiNhanh.addActionListener(e -> onBranchChanged());
+        onBranchChanged();
+    }
+
+    private void onBranchChanged() {
+        String selectedBranch = (String) cbxChiNhanh.getSelectedItem();
+        nhanVienBanChay.refreshData(selectedBranch);
+        doanhThuChiNhanh.refreshData(selectedBranch);
+        topSanPham.refreshData(selectedBranch);
+        nhanVienTotNhat.refreshData(selectedBranch);
+    }
+
+    private void onRefreshClicked() {
+        onBranchChanged();
+    }
+
+    private String resolveCurrentBranchLabel() {
+        String currentMcn = JDBCUtil.getCurrentMcn();
+        if (currentMcn == null || currentMcn.isBlank()) {
+            return "Tất cả chi nhánh";
+        }
+        switch (currentMcn.trim().toUpperCase()) {
+            case "CN1":
+                return "Chi nhánh 1";
+            case "CN2":
+                return "Chi nhánh 2";
+            case "CN3":
+                return "Chi nhánh 3";
+            default:
+                return "Tất cả chi nhánh";
+        }
     }
 }

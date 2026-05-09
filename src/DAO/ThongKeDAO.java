@@ -4,6 +4,7 @@ package DAO;
 import DTO.ThongKe.ThongKeDoanhThuDTO;
 import DTO.ThongKe.ThongKeKhachHangDTO;
 import DTO.ThongKe.ThongKeNhaCungCapDTO;
+import DTO.ThongKe.ThongKeNhanVienBanChayDTO;
 import DTO.ThongKe.ThongKeTheoThangDTO;
 import DTO.ThongKe.ThongKeTonKhoDTO;
 import DTO.ThongKe.ThongKeTungNgayTrongThangDTO;
@@ -477,6 +478,89 @@ OPTION (MAXRECURSION 100);
                 ThongKeTungNgayTrongThangDTO tn = new ThongKeTungNgayTrongThangDTO(ngay, chiphi, doanhthu, loinhuan);
                 result.add(tn);
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    public static ArrayList<ThongKeNhanVienBanChayDTO> getNhanVienBanChay(String chiNhanh) {
+        ArrayList<ThongKeNhanVienBanChayDTO> result = new ArrayList<>();
+        try {
+            String currentMcn = JDBCUtil.getCurrentMcn();
+            if (currentMcn == null || currentMcn.isBlank()) {
+                currentMcn = "CN1";
+            }
+
+            String selectedMcn = null;
+            if (chiNhanh != null && !chiNhanh.equalsIgnoreCase("Tất cả chi nhánh")) {
+                String trimmed = chiNhanh.trim();
+                if (trimmed.toLowerCase().startsWith("chi nhánh")) {
+                    String[] parts = trimmed.split("\\s+");
+                    String last = parts[parts.length - 1];
+                    try {
+                        selectedMcn = "CN" + Integer.parseInt(last);
+                    } catch (NumberFormatException ex) {
+                        selectedMcn = trimmed.toUpperCase().replaceAll("\\s+", "");
+                    }
+                } else {
+                    selectedMcn = trimmed.toUpperCase().replaceAll("\\s+", "");
+                }
+            }
+
+            Connection con = JDBCUtil.getConnection();
+            String dbName = "quanlycuahangdongho";
+            String sql;
+
+            if (selectedMcn == null) {
+                java.util.List<String> branches = new java.util.ArrayList<>(java.util.Arrays.asList("CN1", "CN2", "CN3"));
+                branches.remove(currentMcn);
+
+                StringBuilder unionSql = new StringBuilder();
+                unionSql.append("SELECT NV.MNV AS MNV, NV.HOTEN AS HOTEN, '")
+                        .append(currentMcn)
+                        .append("' AS chiNhanh, SUM(PX.TIEN) AS tongTienBan FROM PHIEUXUAT PX ")
+                        .append("JOIN NHANVIEN NV ON PX.MNV = NV.MNV ")
+                        .append("WHERE PX.TT = 1 GROUP BY NV.MNV, NV.HOTEN");
+
+                for (String branch : branches) {
+                    unionSql.append(" UNION ALL SELECT NV.MNV AS MNV, NV.HOTEN AS HOTEN, '")
+                            .append(branch)
+                            .append("' AS chiNhanh, SUM(PX.TIEN) AS tongTienBan FROM [")
+                            .append(branch)
+                            .append("].[")
+                            .append(dbName)
+                            .append("].dbo.PHIEUXUAT PX JOIN [")
+                            .append(branch)
+                            .append("].[")
+                            .append(dbName)
+                            .append("].dbo.NHANVIEN NV ON PX.MNV = NV.MNV WHERE PX.TT = 1 GROUP BY NV.MNV, NV.HOTEN");
+                }
+
+                sql = "SELECT MNV, HOTEN, chiNhanh, SUM(tongTienBan) AS tongTienBan FROM (" + unionSql + ") AS t GROUP BY MNV, HOTEN, chiNhanh ORDER BY tongTienBan DESC";
+            } else if (selectedMcn.equalsIgnoreCase(currentMcn)) {
+                sql = "SELECT NV.MNV AS MNV, NV.HOTEN AS HOTEN, '" + currentMcn + "' AS chiNhanh, SUM(PX.TIEN) AS tongTienBan "
+                        + "FROM PHIEUXUAT PX JOIN NHANVIEN NV ON PX.MNV = NV.MNV "
+                        + "WHERE PX.TT = 1 GROUP BY NV.MNV, NV.HOTEN ORDER BY tongTienBan DESC";
+            } else {
+                sql = "SELECT NV.MNV AS MNV, NV.HOTEN AS HOTEN, '" + selectedMcn + "' AS chiNhanh, SUM(PX.TIEN) AS tongTienBan "
+                        + "FROM [" + selectedMcn + "].[" + dbName + "].dbo.PHIEUXUAT PX "
+                        + "JOIN [" + selectedMcn + "].[" + dbName + "].dbo.NHANVIEN NV ON PX.MNV = NV.MNV "
+                        + "WHERE PX.TT = 1 GROUP BY NV.MNV, NV.HOTEN ORDER BY tongTienBan DESC";
+            }
+
+            PreparedStatement pst = con.prepareStatement(sql);
+            ResultSet rs = pst.executeQuery();
+            while (rs.next()) {
+                int maNV = rs.getInt("MNV");
+                String tenNV = rs.getString("HOTEN");
+                String branch = rs.getString("chiNhanh");
+                long tongTienBan = rs.getLong("tongTienBan");
+                ThongKeNhanVienBanChayDTO dto = new ThongKeNhanVienBanChayDTO(maNV, tenNV, branch, tongTienBan);
+                result.add(dto);
+            }
+            pst.close();
+            con.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }

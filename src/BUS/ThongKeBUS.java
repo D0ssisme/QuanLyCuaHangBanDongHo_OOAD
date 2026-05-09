@@ -4,6 +4,7 @@ import DAO.ThongKeDAO;
 import DTO.ThongKe.ThongKeDoanhThuDTO;
 import DTO.ThongKe.ThongKeKhachHangDTO;
 import DTO.ThongKe.ThongKeNhaCungCapDTO;
+import DTO.ThongKe.ThongKeNhanVienBanChayDTO;
 import DTO.ThongKe.ThongKeTheoThangDTO;
 import DTO.ThongKe.ThongKeTonKhoDTO;
 import DTO.ThongKe.ThongKeTungNgayTrongThangDTO;
@@ -78,5 +79,9 @@ public class ThongKeBUS {
         
     public ArrayList<ThongKeTungNgayTrongThangDTO> getThongKe7NgayGanNhat(){
         return thongkeDAO.getThongKe7NgayGanNhat();
+    }
+    
+    public ArrayList<ThongKeNhanVienBanChayDTO> getNhanVienBanChay(String chiNhanh) {
+        return ThongKeDAO.getNhanVienBanChay(chiNhanh);
     }
 }
