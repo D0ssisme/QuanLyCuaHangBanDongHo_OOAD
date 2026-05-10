@@ -26,7 +26,7 @@ public final class ThongKe extends JPanel {
     JComboBox<String> cbxChiNhanh;
     JButton btnRefresh;
     ThongKeNhanVienBanChay nhanVienBanChay;
-    ThongKeDoanhThuChiNhanh doanhThuChiNhanh;
+    ThongKeDoanhThu doanhThu; 
     ThongKeTopSanPham topSanPham;
     ThongKeNhanVienTotNhat nhanVienTotNhat;
     Color BackgroundColor = new Color(248, 249, 250);
@@ -78,16 +78,15 @@ public final class ThongKe extends JPanel {
         this.add(functionBar, BorderLayout.NORTH);
 
         nhanVienBanChay = new ThongKeNhanVienBanChay(thongkeBUS);
-        doanhThuChiNhanh = new ThongKeDoanhThuChiNhanh(thongkeBUS);
         topSanPham = new ThongKeTopSanPham(thongkeBUS);
         nhanVienTotNhat = new ThongKeNhanVienTotNhat(thongkeBUS);
+        doanhThu = new ThongKeDoanhThu(thongkeBUS);
 
         tabbedPane = new JTabbedPane();
         tabbedPane.setOpaque(false);
         tabbedPane.addTab("Nhân viên bán chạy", nhanVienBanChay);
-        tabbedPane.addTab("Doanh thu", doanhThuChiNhanh);
+        tabbedPane.addTab("Doanh thu", doanhThu);
         tabbedPane.addTab("Top sản phẩm", topSanPham);
-        tabbedPane.addTab("Nhân viên tốt nhất", nhanVienTotNhat);
 
         this.add(tabbedPane, BorderLayout.CENTER);
 
@@ -100,7 +99,7 @@ public final class ThongKe extends JPanel {
     private void onBranchChanged() {
         String selectedBranch = (String) cbxChiNhanh.getSelectedItem();
         nhanVienBanChay.refreshData(selectedBranch);
-        doanhThuChiNhanh.refreshData(selectedBranch);
+        doanhThu.refreshData(selectedBranch);
         topSanPham.refreshData(selectedBranch);
         nhanVienTotNhat.refreshData(selectedBranch);
     }

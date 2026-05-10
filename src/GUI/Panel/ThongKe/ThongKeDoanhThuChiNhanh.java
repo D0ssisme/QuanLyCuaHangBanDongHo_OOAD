@@ -1,17 +1,20 @@
 package GUI.Panel.ThongKe;
 
+import BUS.ThongKeBUS;
+import DTO.ThongKe.ThongKeDoanhThuChiNhanhDTO;
+import helper.Formater;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
-
+import java.util.ArrayList;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
-
-import BUS.ThongKeBUS;
 
 public class ThongKeDoanhThuChiNhanh extends JPanel {
 
@@ -30,30 +33,57 @@ public class ThongKeDoanhThuChiNhanh extends JPanel {
         this.setBackground(new Color(248, 249, 250));
         this.setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        // Tiêu đề
         JLabel lblTitle = new JLabel("Doanh thu theo chi nhánh");
         lblTitle.setFont(new Font("Arial", Font.BOLD, 16));
         this.add(lblTitle, BorderLayout.NORTH);
 
-        // Tạo bảng
-        model = new DefaultTableModel();
-        model.setColumnIdentifiers(new String[]{"Chi nhánh", "Tổng doanh thu", "Số hoá đơn", "Doanh thu trung bình"});
-        
+        model = new DefaultTableModel() {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        model.setColumnIdentifiers(new String[]{
+            "Chi nhánh", "Tổng doanh thu", "Số hoá đơn", "Doanh thu trung bình/HĐ"
+        });
+
         tableDoanhThu = new JTable(model);
-        tableDoanhThu.setRowHeight(25);
-        tableDoanhThu.setFont(new Font("Arial", Font.PLAIN, 12));
-        
+        tableDoanhThu.setRowHeight(30);
+        tableDoanhThu.setFont(new Font("Arial", Font.PLAIN, 13));
+        tableDoanhThu.getTableHeader().setFont(new Font("Arial", Font.BOLD, 13));
+        tableDoanhThu.setFocusable(false);
+
+        // Căn giữa tất cả cột
+        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+        centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+        for (int i = 0; i < 4; i++) {
+            tableDoanhThu.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+        }
+
         JScrollPane scrollPane = new JScrollPane(tableDoanhThu);
         this.add(scrollPane, BorderLayout.CENTER);
 
-        // Load dữ liệu mặc định
         loadData();
     }
 
     public void loadData() {
         model.setRowCount(0);
-        // TODO: Gọi BUS để lấy dữ liệu doanh thu theo chi nhánh đã chọn
-        // Tạm thời để trống
+        ArrayList<ThongKeDoanhThuChiNhanhDTO> list = thongkeBUS.getDoanhThuTheoChiNhanh(selectedBranch);
+
+        for (ThongKeDoanhThuChiNhanhDTO item : list) {
+            // Hiển thị tên đẹp hơn: CN1 → Chi nhánh 1
+            String tenHienThi = item.getChiNhanh()
+                    .replace("CN1", "Chi nhánh 1")
+                    .replace("CN2", "Chi nhánh 2")
+                    .replace("CN3", "Chi nhánh 3");
+
+            model.addRow(new Object[]{
+                tenHienThi,
+                Formater.FormatVND(item.getTongDoanhThu()),
+                item.getSoHoaDon(),
+                Formater.FormatVND(item.getDoanhThuTrungBinh())
+            });
+        }
     }
 
     public void refreshData(String selectedBranch) {
