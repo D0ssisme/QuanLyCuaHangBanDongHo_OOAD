@@ -292,7 +292,7 @@ public class TongQuan extends JPanel {
         JPanel panel = new JPanel(new GridLayout(1, 4, 15, 0));
         panel.setBackground(BackgroundColor);
 
-        ArrayList<ThongKeTungNgayTrongThangDTO> today = thongKeBUS.getThongKe7NgayGanNhat();
+        ArrayList<ThongKeTungNgayTrongThangDTO> today = thongKeBUS.getThongKe7NgayGanNhat(mcn);
         long doanhThuToday = today.isEmpty() ? 0 : today.get(today.size() - 1).getDoanhthu();
 
         panel.add(createStatCard("Doanh thu hôm nay", Formater.FormatVND(doanhThuToday),
@@ -387,7 +387,7 @@ public class TongQuan extends JPanel {
         list.setOpaque(false);
         list.setBorder(new EmptyBorder(10, 0, 15, 10));
 
-        ArrayList<ThongKeTungNgayTrongThangDTO> data = thongKeBUS.getThongKe7NgayGanNhat();
+        ArrayList<ThongKeTungNgayTrongThangDTO> data = thongKeBUS.getThongKe7NgayGanNhat(mcn);
 
         // Cập nhật khoảng ngày
         if (!data.isEmpty()) {

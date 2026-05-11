@@ -525,24 +525,28 @@ public class ThongKeDAO {
                 String px = tbl(isLocal ? null : target, "PHIEUXUAT");
                 String nv = tbl(isLocal ? null : target, "NHANVIEN");
 
-                // ✅ FIX: alias px, nv trong ON — không dùng tên đầy đủ
+                // Đếm số lượng đơn bán thay vì tổng tiền
                 String sql = "SELECT nv.MNV, nv.HOTEN, '"
-                        + target + "' AS chiNhanh, SUM(px.TIEN) AS tongTienBan "
+                        + target + "' AS chiNhanh, COUNT(px.MPX) AS soLuongDon "
                         + "FROM " + px + " px "
                         + "JOIN " + nv + " nv ON px.MNV = nv.MNV "
                         + "WHERE px.TT = 1 "
                         + "GROUP BY nv.MNV, nv.HOTEN "
-                        + "ORDER BY tongTienBan DESC";
+                        + "ORDER BY soLuongDon DESC";
 
                 PreparedStatement pst = con.prepareStatement(sql);
                 ResultSet rs = pst.executeQuery();
                 while (rs.next()) {
                     result.add(new ThongKeNhanVienBanChayDTO(
                         rs.getInt("MNV"), rs.getString("HOTEN"),
-                        rs.getString("chiNhanh"), rs.getLong("tongTienBan")
+                        rs.getString("chiNhanh"), 0, rs.getInt("soLuongDon")
                     ));
                 }
             }
+            
+            // Sắp xếp lại toàn bộ kết quả theo số lượng đơn giảm dần
+            result.sort((a, b) -> Integer.compare(b.getSoLuongDon(), a.getSoLuongDon()));
+            
         } catch (SQLException e) {
             e.printStackTrace();
         }
