@@ -39,7 +39,7 @@ public class ThongKeNhanVienBanChay extends JPanel {
 
         // Tạo bảng
         model = new DefaultTableModel();
-        model.setColumnIdentifiers(new String[]{"Mã NV", "Tên nhân viên", "Chi nhánh", "Tổng tiền bán"});
+        model.setColumnIdentifiers(new String[]{"Mã NV", "Tên nhân viên", "Chi nhánh", "Số lượng đơn"});
         
         tableNhanVien = new JTable(model);
         tableNhanVien.setRowHeight(25);
@@ -61,7 +61,7 @@ public class ThongKeNhanVienBanChay extends JPanel {
                     item.getMaNhanVien(),
                     item.getTenNhanVien(),
                     item.getChiNhanh() != null ? item.getChiNhanh() : selectedBranch,
-                    String.format("%,d", item.getTongTienBan())
+                    item.getSoLuongDon()
                 });
             }
         } catch (Exception e) {
