@@ -32,3 +32,6 @@ desktop.ini
 # Cache
 __pycache__/
 *.pyc
+
+
+config/*.config
