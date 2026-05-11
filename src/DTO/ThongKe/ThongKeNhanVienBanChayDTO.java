@@ -5,12 +5,22 @@ public class ThongKeNhanVienBanChayDTO {
     private String tenNhanVien;
     private String chiNhanh;
     private long tongTienBan;
+    private int soLuongDon;
 
     public ThongKeNhanVienBanChayDTO(int maNhanVien, String tenNhanVien, String chiNhanh, long tongTienBan) {
         this.maNhanVien = maNhanVien;
         this.tenNhanVien = tenNhanVien;
         this.chiNhanh = chiNhanh;
         this.tongTienBan = tongTienBan;
+        this.soLuongDon = 0;
+    }
+
+    public ThongKeNhanVienBanChayDTO(int maNhanVien, String tenNhanVien, String chiNhanh, long tongTienBan, int soLuongDon) {
+        this.maNhanVien = maNhanVien;
+        this.tenNhanVien = tenNhanVien;
+        this.chiNhanh = chiNhanh;
+        this.tongTienBan = tongTienBan;
+        this.soLuongDon = soLuongDon;
     }
 
     public int getMaNhanVien() {
@@ -43,5 +53,13 @@ public class ThongKeNhanVienBanChayDTO {
 
     public void setTongTienBan(long tongTienBan) {
         this.tongTienBan = tongTienBan;
+    }
+
+    public int getSoLuongDon() {
+        return soLuongDon;
+    }
+
+    public void setSoLuongDon(int soLuongDon) {
+        this.soLuongDon = soLuongDon;
     }
 }
