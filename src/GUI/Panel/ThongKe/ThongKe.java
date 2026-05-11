@@ -13,6 +13,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import GUI.Component.PanelBorderRadius;
 
@@ -26,11 +28,16 @@ public final class ThongKe extends JPanel {
     JComboBox<String> cbxChiNhanh;
     JButton btnRefresh;
     ThongKeNhanVienBanChay nhanVienBanChay;
-    ThongKeDoanhThuChiNhanh doanhThuChiNhanh;
+    ThongKeDoanhThu doanhThu; 
     ThongKeTopSanPham topSanPham;
     ThongKeNhanVienTotNhat nhanVienTotNhat;
     Color BackgroundColor = new Color(248, 249, 250);
     ThongKeBUS thongkeBUS = new ThongKeBUS();
+    
+    // Track lazy loading state
+    private boolean doanhThuLoaded = false;
+    private boolean topSanPhamLoaded = false;
+    private boolean nhanVienTotNhatLoaded = false;
 
     public ThongKe() {
         initComponent();
@@ -77,17 +84,26 @@ public final class ThongKe extends JPanel {
 
         this.add(functionBar, BorderLayout.NORTH);
 
+        // Chỉ load tab đầu tiên (Nhân viên bán chạy)
         nhanVienBanChay = new ThongKeNhanVienBanChay(thongkeBUS);
-        doanhThuChiNhanh = new ThongKeDoanhThuChiNhanh(thongkeBUS);
-        topSanPham = new ThongKeTopSanPham(thongkeBUS);
-        nhanVienTotNhat = new ThongKeNhanVienTotNhat(thongkeBUS);
+        // Các tab khác để null, sẽ được load khi click vào
+        doanhThu = null;
+        topSanPham = null;
+        nhanVienTotNhat = null;
 
         tabbedPane = new JTabbedPane();
         tabbedPane.setOpaque(false);
         tabbedPane.addTab("Nhân viên bán chạy", nhanVienBanChay);
-        tabbedPane.addTab("Doanh thu", doanhThuChiNhanh);
-        tabbedPane.addTab("Top sản phẩm", topSanPham);
-        tabbedPane.addTab("Nhân viên tốt nhất", nhanVienTotNhat);
+        tabbedPane.addTab("Doanh thu", new JPanel()); // Placeholder
+        tabbedPane.addTab("Top sản phẩm", new JPanel()); // Placeholder
+
+        // Thêm listener để lazy load các tab khi click
+        tabbedPane.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                onTabChanged();
+            }
+        });
 
         this.add(tabbedPane, BorderLayout.CENTER);
 
@@ -97,16 +113,57 @@ public final class ThongKe extends JPanel {
         onBranchChanged();
     }
 
+    private void onTabChanged() {
+        int selectedIndex = tabbedPane.getSelectedIndex();
+        String currentBranch = (String) cbxChiNhanh.getSelectedItem();
+
+        switch (selectedIndex) {
+            case 1: // Doanh thu
+                if (!doanhThuLoaded) {
+                    doanhThu = new ThongKeDoanhThu(thongkeBUS);
+                    tabbedPane.setComponentAt(1, doanhThu);
+                    doanhThu.refreshData(currentBranch);
+                    doanhThuLoaded = true;
+                }
+                break;
+            case 2: // Top sản phẩm
+                if (!topSanPhamLoaded) {
+                    topSanPham = new ThongKeTopSanPham(thongkeBUS);
+                    tabbedPane.setComponentAt(2, topSanPham);
+                    topSanPham.refreshData(currentBranch);
+                    topSanPhamLoaded = true;
+                }
+                break;
+        }
+    }
+
     private void onBranchChanged() {
         String selectedBranch = (String) cbxChiNhanh.getSelectedItem();
-        nhanVienBanChay.refreshData(selectedBranch);
-        doanhThuChiNhanh.refreshData(selectedBranch);
-        topSanPham.refreshData(selectedBranch);
-        nhanVienTotNhat.refreshData(selectedBranch);
+        refreshAllData(selectedBranch);
     }
 
     private void onRefreshClicked() {
-        onBranchChanged();
+        // Tự động set lại chi nhánh mà user đang login
+        String currentBranchLabel = resolveCurrentBranchLabel();
+        cbxChiNhanh.setSelectedItem(currentBranchLabel);
+        // Luôn refresh để chắc chắn lấy dữ liệu mới từ database
+        refreshAllData(currentBranchLabel);
+    }
+
+    private void refreshAllData(String branch) {
+        // Luôn refresh tab đầu tiên
+        nhanVienBanChay.refreshData(branch);
+        
+        // Chỉ refresh những tab đã được load
+        if (doanhThuLoaded && doanhThu != null) {
+            doanhThu.refreshData(branch);
+        }
+        if (topSanPhamLoaded && topSanPham != null) {
+            topSanPham.refreshData(branch);
+        }
+        if (nhanVienTotNhatLoaded && nhanVienTotNhat != null) {
+            nhanVienTotNhat.refreshData(branch);
+        }
     }
 
     private String resolveCurrentBranchLabel() {

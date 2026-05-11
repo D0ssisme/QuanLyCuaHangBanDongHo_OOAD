@@ -44,4 +44,12 @@ public class ThongKeNhanVienBanChayDTO {
     public void setSoDonBan(int soDonBan) {
         this.soDonBan = soDonBan;
     }
+
+    public int getSoLuongDon() {
+        return soLuongDon;
+    }
+
+    public void setSoLuongDon(int soLuongDon) {
+        this.soLuongDon = soLuongDon;
+    }
 }
