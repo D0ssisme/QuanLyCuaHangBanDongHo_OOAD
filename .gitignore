@@ -1,2 +1,30 @@
 /nbproject/private/
 /build/
+# Build and distribution
+/dist/
+/out/
+/target/
+
+# IDE and editor
+/.idea/
+*.iml
+/.classpath
+/.project
+/.settings/
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Java artifacts
+*.class
+*.jar
+
+# Logs and databases
+*.log
+*.db
+*.sqlite
+
+# Environment
+.env
