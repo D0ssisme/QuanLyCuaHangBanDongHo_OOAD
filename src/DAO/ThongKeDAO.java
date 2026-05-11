@@ -518,15 +518,15 @@ OPTION (MAXRECURSION 100);
 
                 StringBuilder unionSql = new StringBuilder();
                 unionSql.append("SELECT NV.MNV AS MNV, NV.HOTEN AS HOTEN, '")
-                        .append(currentMcn)
-                        .append("' AS chiNhanh, SUM(PX.TIEN) AS tongTienBan FROM PHIEUXUAT PX ")
-                        .append("JOIN NHANVIEN NV ON PX.MNV = NV.MNV ")
-                        .append("WHERE PX.TT = 1 GROUP BY NV.MNV, NV.HOTEN");
+                    .append(currentMcn)
+                    .append("' AS chiNhanh, COUNT(DISTINCT PX.MPX) AS soDonBan FROM PHIEUXUAT PX ")
+                    .append("JOIN NHANVIEN NV ON PX.MNV = NV.MNV ")
+                    .append("WHERE PX.TT = 1 GROUP BY NV.MNV, NV.HOTEN");
 
                 for (String branch : branches) {
-                    unionSql.append(" UNION ALL SELECT NV.MNV AS MNV, NV.HOTEN AS HOTEN, '")
+                        unionSql.append(" UNION ALL SELECT NV.MNV AS MNV, NV.HOTEN AS HOTEN, '")
                             .append(branch)
-                            .append("' AS chiNhanh, SUM(PX.TIEN) AS tongTienBan FROM [")
+                            .append("' AS chiNhanh, COUNT(DISTINCT PX.MPX) AS soDonBan FROM [")
                             .append(branch)
                             .append("].[")
                             .append(dbName)
@@ -537,16 +537,16 @@ OPTION (MAXRECURSION 100);
                             .append("].dbo.NHANVIEN NV ON PX.MNV = NV.MNV WHERE PX.TT = 1 GROUP BY NV.MNV, NV.HOTEN");
                 }
 
-                sql = "SELECT MNV, HOTEN, chiNhanh, SUM(tongTienBan) AS tongTienBan FROM (" + unionSql + ") AS t GROUP BY MNV, HOTEN, chiNhanh ORDER BY tongTienBan DESC";
+                    sql = "SELECT MNV, HOTEN, chiNhanh, SUM(soDonBan) AS soDonBan FROM (" + unionSql + ") AS t GROUP BY MNV, HOTEN, chiNhanh ORDER BY soDonBan DESC";
             } else if (selectedMcn.equalsIgnoreCase(currentMcn)) {
-                sql = "SELECT NV.MNV AS MNV, NV.HOTEN AS HOTEN, '" + currentMcn + "' AS chiNhanh, SUM(PX.TIEN) AS tongTienBan "
+                    sql = "SELECT NV.MNV AS MNV, NV.HOTEN AS HOTEN, '" + currentMcn + "' AS chiNhanh, COUNT(DISTINCT PX.MPX) AS soDonBan "
                         + "FROM PHIEUXUAT PX JOIN NHANVIEN NV ON PX.MNV = NV.MNV "
-                        + "WHERE PX.TT = 1 GROUP BY NV.MNV, NV.HOTEN ORDER BY tongTienBan DESC";
+                        + "WHERE PX.TT = 1 GROUP BY NV.MNV, NV.HOTEN ORDER BY soDonBan DESC";
             } else {
-                sql = "SELECT NV.MNV AS MNV, NV.HOTEN AS HOTEN, '" + selectedMcn + "' AS chiNhanh, SUM(PX.TIEN) AS tongTienBan "
+                    sql = "SELECT NV.MNV AS MNV, NV.HOTEN AS HOTEN, '" + selectedMcn + "' AS chiNhanh, COUNT(DISTINCT PX.MPX) AS soDonBan "
                         + "FROM [" + selectedMcn + "].[" + dbName + "].dbo.PHIEUXUAT PX "
                         + "JOIN [" + selectedMcn + "].[" + dbName + "].dbo.NHANVIEN NV ON PX.MNV = NV.MNV "
-                        + "WHERE PX.TT = 1 GROUP BY NV.MNV, NV.HOTEN ORDER BY tongTienBan DESC";
+                        + "WHERE PX.TT = 1 GROUP BY NV.MNV, NV.HOTEN ORDER BY soDonBan DESC";
             }
 
             PreparedStatement pst = con.prepareStatement(sql);
@@ -555,8 +555,8 @@ OPTION (MAXRECURSION 100);
                 int maNV = rs.getInt("MNV");
                 String tenNV = rs.getString("HOTEN");
                 String branch = rs.getString("chiNhanh");
-                long tongTienBan = rs.getLong("tongTienBan");
-                ThongKeNhanVienBanChayDTO dto = new ThongKeNhanVienBanChayDTO(maNV, tenNV, branch, tongTienBan);
+                int soDonBan = rs.getInt("soDonBan");
+                ThongKeNhanVienBanChayDTO dto = new ThongKeNhanVienBanChayDTO(maNV, tenNV, branch, soDonBan);
                 result.add(dto);
             }
             pst.close();
